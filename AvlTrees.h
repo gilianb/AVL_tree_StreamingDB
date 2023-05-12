@@ -28,7 +28,7 @@ class Node {
     Node* right_son;
 public:
     explicit Node(int key = -1, T element = nullptr, int height = 0, Node* father = nullptr, Node* left_son = nullptr,
-         Node* right_son = nullptr);
+    Node* right_son = nullptr);
     ~Node();
     void SetKey(int key);
     int GetKey() const;
@@ -56,6 +56,7 @@ class Avl_tree {
 private:
     Node<T>* root;
     //Node<T>* CopyNodes(Node<T>* node);
+    //Node<T>* biggestNodes;
 
 public:
     Avl_tree();
@@ -114,7 +115,7 @@ public:
 
     void Inorder(Node<T>* node, Node<T>** array, int size);
 
-    Node<T>* ReplaceNodeByAnother(Node<T>* last, Node<T>* new_node);
+   // Node<T>* ReplaceNodeByAnother(Node<T>* last, Node<T>* new_node);
 };
 
 
@@ -500,9 +501,281 @@ AVLResults Avl_tree<T>::InsertNode(Node<T>* node){
 
 
 template <class T>
-AVLResults Avl_tree<T>::Remove_Node_Leaf(Node<T> *node) {
+AVLResults Avl_tree<T>::RemoveNode(int key_to_remove) {
 
+    if (key_to_remove<0)
+        return AVL_NULL_ARGUMENT;
+
+    Node<T>* node_to_remove= FindNode(root, key_to_remove);
+    if (node_to_remove== nullptr)
+        return AVL_NODE_NO_EXIST;
+
+    if (node_to_remove->GetNodeRight()== nullptr && node_to_remove->GetNodeLeft()== nullptr)
+        return this->Remove_Node_Leaf(node_to_remove);
+
+    else if (node_to_remove->GetNodeRight()== nullptr || node_to_remove->GetNodeLeft()== nullptr)
+        return this->Remove_Node_With_Only_Child(node_to_remove);
+
+    //The node has 2 children, we look for the "following" node and we swap them
+    //then we delete the node to remove
+    Node<T>* following_node= node_to_remove->Get_Following_node();
+    /*there's a following node because if there's not it means the node_to_remove is the biggest
+    node and that means it's the leaf at the right of the tree */
+    Swap(node_to_remove, following_node);
+    if(node_to_remove->GetFatherNode()== nullptr)
+    {
+        this->root=following_node;
+        following_node->SetFatherNode(nullptr);
+    }
+
+    else if(node_to_remove->GetFatherNode()!= nullptr)
+    {
+        if(node_to_remove->GetNodeRight()== nullptr) {
+            if (node_to_remove->GetFatherNode()->GetNodeRight() == node_to_remove)
+                node_to_remove->GetFatherNode()->SetNodeRight(nullptr);
+            else if (node_to_remove->GetFatherNode()->GetNodeLeft() == node_to_remove)
+                node_to_remove->GetFatherNode()->SetNodeLeft(nullptr);
+        }
+
+        else if(node_to_remove->GetNodeRight() != nullptr)
+        {
+            node_to_remove->GetNodeRight()->SetFatherNode(node_to_remove->GetFatherNode());
+            if (node_to_remove->GetFatherNode()->GetNodeRight() == node_to_remove)
+                node_to_remove->GetFatherNode()->SetNodeRight(node_to_remove->GetNodeRight());
+            else if (node_to_remove->GetFatherNode()->GetNodeLeft() == node_to_remove)
+                node_to_remove->GetFatherNode()->SetNodeLeft(node_to_remove->GetNodeRight());
+        }
+    }
+
+    //fix the heights of the fathers
+    Node<T>* father = node_to_remove->GetFatherNode();
+    Node<T>* temp =father;
+    while(temp!= nullptr)
+    {
+        if(temp->SetNewHeight()==0)
+            break;
+        temp= temp->GetFatherNode();
+    }
+
+    //We now check the BF of all the nodes from here to the root
+    if(father == nullptr)
+    {
+        return AVL_SUCCESS;
+    }
+    int BF = father->GetBF();
+
+    while (true)
+    {
+        if (BF==2){
+            if(father->GetNodeLeft() != nullptr) {
+
+                if ((father->GetNodeLeft())->GetBF() == -1)
+                    RotateLR(father);
+                else if ((father->GetNodeLeft())->GetBF() >= 0)
+                    RotateLL(father);
+            }
+        }
+
+        if (BF==-2){
+            if(father->GetNodeRight() != nullptr) {
+                if ((father->GetNodeRight())->GetBF() == 1)
+                    RotateRL(father);
+                else if ((father->GetNodeRight())->GetBF() <= 0)
+                    RotateRR(father);
+            }
+        }
+
+        if (father->GetFatherNode()== nullptr)
+            break;
+        father=father->GetFatherNode();
+        BF = father->GetBF();
+    }
+
+    delete node_to_remove;
+    return AVL_SUCCESS;
 }
+
+//if it's a leaf, remove it and then check the BF of every node before and fix it.
+template <class T>
+AVLResults Avl_tree<T>::Remove_Node_Leaf(Node<T>* node) {
+    if (node == nullptr)
+        return AVL_NULL_ARGUMENT;
+
+    //Remove the node
+    Node<T>* father = node->GetFatherNode();
+
+    if(father== nullptr) //the node is the root and has no son
+    {
+        this->root = nullptr;
+        delete node;
+        return AVL_SUCCESS;
+    }
+
+    //the node is a left leaf
+    if (father->GetNodeLeft()==node) {
+        father->SetNodeLeft(nullptr);
+        if(father->GetNodeRight()== nullptr) {
+            father->SetHeight(0);
+            Node<T>* temp= father;
+            while(temp->GetFatherNode()!= nullptr)
+            {
+                //if the node didnt change the height, we stop checking further
+                if (temp->GetFatherNode()->SetNewHeight()==0)
+                    break;
+                temp= temp->GetFatherNode();
+            }
+        }
+    }
+
+    //the node is a right leaf
+    if (father->GetNodeRight()==node) {
+        father->SetNodeRight(nullptr);
+
+        if (father->GetNodeLeft() == nullptr) { //change the height
+            father->SetHeight(0);
+            Node<T> *temp = father;
+            while (temp->GetFatherNode() != nullptr) {
+                //if the node didnt change the height, we stop checking further
+                if (temp->GetFatherNode()->SetNewHeight() == 0)
+                    break;
+                temp = temp->GetFatherNode();
+            }
+        }
+    }
+
+    delete node;
+
+    //then check the BF of every node from father to the root.
+    int BF = father->GetBF();
+
+    while (true)
+    {
+        if (BF==2){
+            if(father->GetNodeLeft() != nullptr) {
+                if ((father->GetNodeLeft()->GetBF() == -1))
+                    RotateLR(father);
+                else if ((father->GetNodeLeft())->GetBF() >= 0)
+                    RotateLL(father);
+            }
+        }
+
+        if (BF==-2){
+            if(father->GetNodeRight() != nullptr) {
+                if ((father->GetNodeRight())->GetBF() == 1)
+                    RotateRL(father);
+                else if ((father->GetNodeRight())->GetBF() <= 0)
+                    RotateRR(father);
+            }
+        }
+
+        if (father->GetFatherNode()== nullptr)
+            break;
+        father=father->GetFatherNode();
+        BF = father->GetBF();
+    }
+
+    return AVL_SUCCESS;
+}
+
+//if there's one son, remove it and replace it in the "father" node with his son
+// and then check the BF of every node before and fix it.
+template <class T>
+AVLResults Avl_tree<T>::Remove_Node_With_Only_Child(Node<T>* node) {
+    if (node== nullptr)
+        return AVL_NULL_ARGUMENT;
+
+    Node<T>* father = node->GetFatherNode();
+    if(father == nullptr) //node is root and has only one son
+    {
+        if (node->GetNodeRight() == nullptr)
+        {
+            this->root = node->GetNodeLeft();
+            node->GetNodeLeft()->SetFatherNode(nullptr);
+            delete node;
+            return AVL_SUCCESS;
+        }
+
+        if (node->GetNodeLeft() == nullptr)
+        {
+            this->root = node->GetNodeRight();
+            node->GetNodeRight()->SetFatherNode(nullptr);
+            delete node;
+            return AVL_SUCCESS;
+        }
+    }
+
+    //first remove the node and replace it with his son.
+    if(father->GetNodeLeft()==node) {
+        if (node->GetNodeRight() == nullptr) {
+            father->SetNodeLeft(node->GetNodeLeft());
+            node->GetNodeLeft()->SetFatherNode(father);
+        }
+        else {
+            father->SetNodeLeft(node->GetNodeRight());
+            node->GetNodeRight()->SetFatherNode(father);
+        }
+    }
+
+    else {
+        if (node->GetNodeRight() == nullptr) {
+            father->SetNodeRight(node->GetNodeLeft());
+            node->GetNodeLeft()->SetFatherNode(father);
+        }
+        else {
+            father->SetNodeRight(node->GetNodeRight());
+            node->GetNodeRight()->SetFatherNode(father);
+        }
+    }
+
+    //fix the heights of the fathers
+    Node<T>* temp =father;
+    while(temp!= nullptr)
+    {
+        if(temp->SetNewHeight()==0)
+            break;
+        temp= temp->GetFatherNode();
+    }
+
+    delete node;
+
+    //then check the BF and fix it from father up to the root
+    if(father == nullptr)
+    {
+        return AVL_SUCCESS;
+    }
+    int BF = father->GetBF();
+
+    while (true)
+    {
+        if (BF==2){
+            if(father->GetNodeLeft() != nullptr) {
+
+                if ((father->GetNodeLeft())->GetBF() == -1)
+                    RotateLR(father);
+                else if ((father->GetNodeLeft())->GetBF() >= 0)
+                    RotateLL(father);
+            }
+        }
+
+        if (BF==-2){
+            if(father->GetNodeRight() != nullptr) {
+
+                if ((father->GetNodeRight())->GetBF() == 1)
+                    RotateRL(father);
+                else if ((father->GetNodeRight())->GetBF() <= 0)
+                    RotateRR(father);
+            }
+        }
+
+        if (father->GetFatherNode()== nullptr)
+            break;
+        father=father->GetFatherNode();
+        BF = father->GetBF();
+    }
+
+    return AVL_SUCCESS;
+}
+
 
 
 
