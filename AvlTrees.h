@@ -90,7 +90,7 @@ public:
     AVLResults RemoveNode(int key);
 
     AVLResults RemoveNode(int key, int PlayerID);
-
+    AVLResults RemoveNode(Node<T>* node_to_remove);
     AVLResults Remove_Node_Leaf(Node<T>* node);
 
     AVLResults Remove_Node_With_Only_Child (Node<T>* node);
@@ -929,10 +929,61 @@ void Avl_tree<T>::Check_And_Fix_BF(Node<T>* check){
         check = check->GetFatherNode;
     }
 }
+template <class T>
+AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
+    if (key_to_remove<0)
+        return AVL_NULL_ARGUMENT;
 
+    if (node_to_remove== nullptr)
+        return AVL_NODE_NO_EXIST;
+        //if it s a leaf or the root alone
+    if (node_to_remove->GetNodeRight()== nullptr && node_to_remove->GetNodeLeft()== nullptr){
+        if(node_to_remove==root){
+            root = nullptr
+        }
+        else{
+            if(node_to_remove->GetFatherNode()->GetNodeRight== node_to_remove){
+                node_to_remove->GetFatherNode()->SetNodeRight(nullptr);
+            }
+            else{
+                node_to_remove->GetFatherNode()->SetNodeLeft(nullptr);
+            }
+            this->Check_And_Fix_BF(node_to_remove->GetFatherNode());
+        }
+    }
+    else if (node_to_remove->GetNodeRight()== nullptr || node_to_remove->GetNodeLeft()== nullptr){
+        Node<T>* son_of_node_to_remove;
+        if (node_to_remove->GetNodeRight()== nullptr){
+            son_of_node_to_remove = node_to_remove->GetNodeLeft();
+        }
+        else son_of_node_to_remove = node_to_remove->GetNodeRight();
+        son_of_node_to_remove->SetFatherNode(node_to_remove->GetFatherNode());
+        if(node_to_remove==root){
+            root = son_of_node_to_remove;
+        }
+        else{
+            if(node_to_remove->GetFatherNode()->GetNodeRight== node_to_remove){
+                node_to_remove->GetFatherNode()->SetNodeRight(son_of_node_to_remove);
+            }
+            else{
+                node_to_remove->GetFatherNode()->SetNodeLeft(son_of_node_to_remove);
+            }
+        }
+        this->Check_And_Fix_BF(son_of_node_to_remove);
+        delete node_to_remove;
+        return AVL_SUCCESS;
+    }
+    //The node has 2 children, we look for the "following" node and we swap them
+    //then we delete the node to remove
+    else{
+        Node<T>* node_to_swap = node_to_remove->GetNodeRight();
+        while(node_to_swap->GetNodeLeft() != nullptr){
+            node_to_swap = node_to_swap->GetNodeLeft();
+        }
+        this->Swap(node_to_remove,node_to_swap);
+        return this->RemoveNode(node_to_remove);
 
-
-
-
-
+    }
+}
+    
 #endif //MIVNEWET1_AVLTREES_H
