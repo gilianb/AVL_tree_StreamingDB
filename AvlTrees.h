@@ -44,7 +44,6 @@ public:
     void SetFatherNode(Node* father);
     Node* GetFatherNode();
     int GetBalancedFactor();
-    //int getHeight();
     Node* Get_Following_node();
     int SetNewHeight();
     Node* BuildAvlSubtree(int height_needed);
@@ -57,7 +56,6 @@ private:
     Node<T>* root;
     //Node<T>* CopyNodes(Node<T>* node);
     //Node<T>* biggestNodes;
-
 public:
     Avl_tree();
 
@@ -87,7 +85,7 @@ public:
 
     AVLResults InsertNode(int key, T& element, int PlayerID, Node<T>* added_node);
 
-    void Fix_BF_after_insert(Node<T>* check);
+    void Check_And_Fix_BF(Node<T>* check);
 
     AVLResults RemoveNode(int key);
 
@@ -99,7 +97,7 @@ public:
 
     void Swap(Node<T>* node_1, Node<T>* node_2);
 
-    AVLResults RotateLL(Node<T>* node);
+    AVLResults RotateLL(Node<T>* B_node);
 
     AVLResults RotateLR(Node<T>* node);
 
@@ -223,7 +221,7 @@ int Node<T>::GetBalancedFactor() {
 
 template <class T>
 Node<T>* Node<T>::Get_Following_node(){
-    //case1 no father
+    //case1 no father//
     Node<T>* following_node;
     if(father== nullptr){
         if (right_son== nullptr){
@@ -303,7 +301,7 @@ int Node<T>::SetNewHeight(){
 
 
 template <class T>
-Node<T>* Node<T>::BuildAvlSubtree(int height_needed){
+Node<T>* Node<T>::BuildAvlSubtree(int height_needed){///??
 
     if (height_needed <= 0)
         return nullptr;
@@ -317,7 +315,7 @@ Node<T>* Node<T>::BuildAvlSubtree(int height_needed){
 
 
 template <class T>
-Node<T>* Node<T>::GetPreviousNode(){
+Node<T>* Node<T>::GetPreviousNode(){///needed???
     Node<T> *following;
     if (father == nullptr) {
         if (left_son == nullptr) //there's no smallest after him and there's no father
@@ -430,18 +428,17 @@ template <class T>
 AVLResults Avl_tree<T>::InsertNode(Node<T>* node){
 
     //rajouter les cas ou le AVL fail
-
+    node->SetNodeLeft(nullptr);
+    node->SetNodeRight(nullptr);
+    node->SetHeight(0);
     if (root== nullptr){
-        node->SetHeight(0);
         node->SetFatherNode(nullptr);
-        node->SetNodeLeft(nullptr);
-        node->SetNodeRight(nullptr);
         root = node;
         return AVL_SUCCESS;
     }
     Node<T>* current_node=root;
     while (current_node!= nullptr){
-        if(current_node->GetKey()<node->GetKey()){
+        if(current_node->GetKey() < node->GetKey()){
             if (current_node->GetNodeRight()== nullptr){
                 break;
             }
@@ -456,48 +453,17 @@ AVLResults Avl_tree<T>::InsertNode(Node<T>* node){
             continue;
         }
     }
-    if(current_node->GetKey()<node->GetKey()) {
+    if(current_node->GetKey() < node->GetKey()) {
         current_node->SetNodeRight(node);
     }
-    if(current_node->GetKey()>node->GetKey()) {
+    if(current_node->GetKey() > node->GetKey()) {
         current_node->SetNodeLeft(node);
     }
-
-    node->SetHeight(0);
     node->SetFatherNode(current_node);
-    node->SetNodeLeft(nullptr);
-    node->SetNodeRight(nullptr);
-
-    //update height of the tree before BF
-    Node<T>* temp = node;
-    while (temp->GetFatherNode() != nullptr)
-    {
-        temp->GetFatherNode()->SetNewHeight();
-        temp = temp->GetFatherNode();
-    }
-
     // time to check the BF
-    Node<T>* node_to_balance = node;
-    int BF;
-    while (node_to_balance!= nullptr){
-        BF=node_to_balance->GetBalancedFactor();
-        if(BF==2 || BF==-2){
-            Fix_BF_after_insert(current_node);//current node is the father of node_to_balance
-        }
-        node_to_balance=node_to_balance->GetFatherNode();
-        current_node=current_node->GetFatherNode();
-    }
-
-    //update height of the tree after BF
-    temp = node;
-    while (temp->GetFatherNode() != nullptr)
-    {
-        temp->GetFatherNode()->SetNewHeight();
-        temp = temp->GetFatherNode();
-    }
+    this->Check_And_Fix_BF(node);
     return AVL_SUCCESS;
-}
-
+    }
 
 
 template <class T>
@@ -776,8 +742,193 @@ AVLResults Avl_tree<T>::Remove_Node_With_Only_Child(Node<T>* node) {
     return AVL_SUCCESS;
 }
 
+template <class T> // not needed
+void Avl_tree<T>::Swap(Node<T>* node_1, Node<T>* node_2){
+    int temp_height = node_1->GetHeight;
+    Node<T>* temp_left_son = node_1->GetNodeLeft();
+    Node<T>* temp_right_son = node_1->GetNodeRight();
+    Node<T>* temp_father_node = node_1->GetFatherNode();
+    node_1->SetFatherNode(node_2->GetFatherNode());
+    node_1->SetNodeRight(node_2->GetNodeRight());
+    node_1->SetNodeLeft(node_2->GetNodeLeft());
+    node_1->SetHeight(node_2->GetHeight());
+    node_2->SetFatherNode(temp_father_node);
+    node_2->SetNodeRight(temp_right_son);
+    node_2->SetNodeLeft(temp_left_son);
+    node_2->SetHeight(temp_height);
+    Node<T>* father_node_1 = node_1->GetFatherNode();
+    Node<T>* father_node_2 = node_2->GetFatherNode();
+    if(father_node_1 == nullptr){
+        this->SetRoot(node_1);
+    }
+    else{
+        if(father_node_1->GetNodeRight() == node_2){
+            father_node_1->SetNodeRight = node_1;
+        }
+        else father_node_1->SetNodeLeft = node_1;
+    }
+    if(father_node_2 == nullptr){
+        this->SetRoot(node_2);
+    }
+    else{
+        if(father_node_2->GetNodeRight() == node_1){
+            father_node_2->SetNodeRight = node_2;
+        }
+        else father_node_2->SetNodeLeft = node_2;
+    }
+    Node<T>* right_son_1 = node_1->GetNodeRight();
+    if(right_son_1 != nullptr){
+        right_son_1->SetFatherNode(node_1);
+    }
+    Node<T>* left_son_1= node_1->GetNodeLeft();
+    if(left_son_1 != nullptr){
+        left_son_1->SetFatherNode(node_1);
+    }
+    Node<T>* right_son_2 = node_2->GetNodeRight();
+    if(right_son_2 != nullptr){
+        right_son_2->SetFatherNode(node_2);
+    }
+    Node<T>* left_son_2= node_2->GetNodeLeft();
+    if(left_son_2 != nullptr){
+        left_son_2->SetFatherNode(node_2);
+    }
+}
+template <class T>
+AVLResults Avl_tree<T>::RotateLL(Node<T>* B_node){
+    Node<T>* A_node = B_node->GetNodeLeft();
+    Node<T>* A_node_right = A_node->GetNodeRight();
+    A_node->SetFatherNode(B_node->GetFatherNode());
+    if(A_node->GetFatherNode() == nullptr){
+        this->SetRoot(A_node);
+    }
+    else{
+        if(A_node->GetFatherNode()->GetNodeLeft()== B_node){
+            A_node->GetFatherNode()->SetNodeLeft(A_node);
+        }
+        else A_node->GetFatherNode()->SetNodeRight(A_node);
+    }
+    A_node->SetNodeRight(B_node);
+    B_node->SetFatherNode(A_node);
+    B_node->SetNodeLeft(A_node_right());
+    if(A_node_right != nullptr){
+        A_node_right->SetFatherNode(B_node);
+    }
+    A_node->SetNewHeight();
+    B_node->SetNewHeight();
+    return AVL_SUCCESS;
+}
 
+template <class T>
+AVLResults Avl_tree<T>::RotateRR(Node<T>* B_node){
+    Node<T>* A_node = B_node->GetNodeRight();
+    Node<T>* A_node_left = A_node->GetNodeLeft();
+    A_node->SetFatherNode(B_node->GetFatherNode());
+    if(A_node->GetFatherNode() == nullptr){
+        this->SetRoot(A_node);
+    }
+    else{
+        if(A_node->GetFatherNode()->GetNodeLeft()== B_node){
+            A_node->GetFatherNode()->SetNodeLeft(A_node);
+        }
+        else A_node->GetFatherNode()->SetNodeRight(A_node);
+    }
+    A_node->SetNodeLeft(B_node);
+    B_node->SetFatherNode(A_node);
+    B_node->SetNodeRight(A_node_Left());
+    if(A_node_left != nullptr){
+        A_node_left->SetFatherNode(B_node);
+    }
+    A_node->SetNewHeight();
+    B_node->SetNewHeight();
+    return AVL_SUCCESS;                                                                                                                                                                                                                                                                                                                                                                                                                       }
 
+template <class T>
+AVLResults Avl_tree<T>::RotateLR(Node<T>* C_node){
+    Node<T>* A_node = C_node->GetNodeLeft();
+    Node<T>* B_node = A_node->GetNodeRight();
+    Node<T>* B_node_right = B_node->GetNodeRight();
+    Node<T>* B_node_left = B_node->GetNodeLeft();
+    B_node->SetFatherNode(C_node->GetFatherNode());
+    if(B_node->GetFatherNode() == nullptr){
+        this->SetRoot(B_node);
+    }
+    else{
+        if(B_node->GetFatherNode()->GetNodeLeft()== C_node){
+            B_node->GetFatherNode()->SetNodeLeft(B_node);
+        }
+        else B_node->GetFatherNode()->SetNodeRight(B_node);
+    }
+    B_node->SetNodeLeft(A_node);
+    B_node->SetNodeRight(C_node);
+    A_node->SetFatherNode(B_node);
+    C_node->SetFatherNode(B_node);
+    C_node->SetNodeLeft(B_node_right);
+    if(B_node_right != nullptr){
+        B_node_right->SetFatherNode(C_node);
+    }
+    A_node->SetNodeRight(B_node_left);
+    if(B_node_left != nullptr){
+        B_node_left->SetFatherNode(A_node);
+    }
+    A_node->SetNewHeight();
+    C_node->SetNewHeight();
+    B_node->SetNewHeight();
+    return AVL_SUCCESS;                                                                                                                                                                                                                                                                                                                                                                                                                       }
+
+template <class T>
+AVLResults Avl_tree<T>::RotateRL(Node<T>* C_node){
+    Node<T>* A_node = C_node->GetNodeRight();
+    Node<T>* B_node = A_node->GetNodeLeft();
+    Node<T>* B_node_right = B_node->GetNodeRight();
+    Node<T>* B_node_left = B_node->GetNodeLeft();
+    B_node->SetFatherNode(C_node->GetFatherNode());
+    if(B_node->GetFatherNode() == nullptr){
+        this->SetRoot(B_node);
+    }
+    else{
+        if(B_node->GetFatherNode()->GetNodeLeft()== C_node){
+            B_node->GetFatherNode()->SetNodeLeft(B_node);
+        }
+        else B_node->GetFatherNode()->SetNodeRight(B_node);
+    }
+    B_node->SetNodeRight(A_node);
+    B_node->SetNodeLeft(C_node);
+    A_node->SetFatherNode(B_node);
+    C_node->SetFatherNode(B_node);
+    C_node->SetNodeRight(B_node_left);
+    if(B_node_left != nullptr){
+        B_node_left->SetFatherNode(C_node);
+    }
+    A_node->SetNodeLeft(B_node_right);
+    if(B_node_right != nullptr){
+        B_node_right->SetFatherNode(A_node);
+    }
+    A_node->SetNewHeight();
+    C_node->SetNewHeight();
+    B_node->SetNewHeight();
+    return AVL_SUCCESS;                                                                                                                                                                                                                                                                                                                                                                                                                       }
+
+template <class T>
+void Avl_tree<T>::Check_And_Fix_BF(Node<T>* check){
+    while(check != nullptr){
+        if(check->GetBalancedFactor() == 2){
+            if(check->GetNodeLeft()->GetBalancedFactor() == -1){
+                this->RotateLR(check);
+            }
+            else this->RotateLL(check);
+        }
+        else if(check->GetBalancedFactor() == -2){
+            if(check->GetNodeRight()->GetBalancedFactor() == 1){
+                this->RotateRL(check);
+            }
+            else this-> RotateRR:
+        }
+        else{
+            check->SetNewHeight();
+        }
+        check = check->GetFatherNode;
+    }
+}
 
 
 
