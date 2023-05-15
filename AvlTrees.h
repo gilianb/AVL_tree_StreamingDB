@@ -69,11 +69,11 @@ public:
 
     void SetRoot( Node<T>* new_root);
 
-    Node<T>* FindNode(Node<T>* root, int key) const;
+    Node<T>* FindNode(int key) const;
 
     Node<T>* FindNode(Node<T>* root, int key, int player_id);
 
-    //findnode (root,key,grade,view)
+    Node<T>* FindNodeInGenre(Node<T>* node_to_return);
 
     int InorderVisit(Node<T>* node, int* array, int i);
 
@@ -90,7 +90,9 @@ public:
     AVLResults RemoveNode(int key);
 
     AVLResults RemoveNode(int key, int PlayerID);
+
     AVLResults RemoveNode(Node<T>* node_to_remove);
+
     AVLResults Remove_Node_Leaf(Node<T>* node);
 
     AVLResults Remove_Node_With_Only_Child (Node<T>* node);
@@ -104,8 +106,6 @@ public:
     AVLResults RotateRL(Node<T>* node);
 
     AVLResults RotateRR(Node<T>* node);
-
- //   Node<T>* Get_smallest_node();
 
     Node<T>* Get_biggest_node();
 
@@ -220,7 +220,7 @@ int Node<T>::GetBalancedFactor() {
 }
 
 template <class T>
-Node<T>* Node<T>::Get_Following_node(){
+Node<T>* Node<T>::Get_Following_node(){ //not needed
     //case1 no father//
     Node<T>* following_node;
     if(father== nullptr){
@@ -395,24 +395,15 @@ void Avl_tree<T>::SetRoot( Node<T>* new_root)
 
 
 template <class T>
-Node<T>* Avl_tree<T>::FindNode(Node<T>* given_root, int key_to_find) const{
+Node<T>* Avl_tree<T>::FindNode(int key_to_find) const{
     if (root == nullptr)
     {
         return nullptr;
     }
-    if(given_root == nullptr)
-    {
-        return nullptr;
-    }
-
-    Node<T>* node_to_return;
-    int current_key= given_root->GetKey();
-    if(key_to_find==current_key) {
-        node_to_return = given_root ;
-        return node_to_return;
-    }
+    Node<T>* node_to_return = root;
+    int current_key= root->GetKey();
     while (key_to_find!=current_key && node_to_return != nullptr){
-        if(key_to_find<current_key){
+        if(key_to_find < current_key){
             node_to_return=node_to_return->GetNodeLeft();
             current_key=node_to_return->GetKey();
         }
@@ -423,6 +414,25 @@ Node<T>* Avl_tree<T>::FindNode(Node<T>* given_root, int key_to_find) const{
     }
     return node_to_return;
 }
+template <class T>
+Node<T>* Avl_tree<T>::FindNodeInGenre(Node<T>* node_to_return){
+    if (root == nullptr)
+    {
+        return nullptr;
+    }
+    Node<T>* current_node = root;
+    while (node_to_return->GetKey()!=current_node->GetKey() && current_node != nullptr){
+        if(node_to_return->GetElement < current_node->GetElement){
+            node_to_return=node_to_return->GetNodeLeft();
+            current_key=node_to_return->GetKey();
+        else {
+            node_to_return=node_to_return->GetNodeRight();
+            current_key=node_to_return->GetKey();
+        }
+    }
+    return node_to_return;
+}
+};
 
 template <class T>
 AVLResults Avl_tree<T>::InsertNode(Node<T>* node){
