@@ -18,7 +18,7 @@ struct user_t{
     int nfantasy=0;
     int ncomedy=0;
     int naction=0;
-    int nfiction=0;
+    int ndrama=0;
 
 };
 
@@ -31,10 +31,10 @@ struct group_t{
     int Nfantasy=0;
     int Ncomedy=0;
     int Naction=0;
-    int Nfiction=0;
+    int Ndrama=0;
     int WTfantasy=0;
     int WTaction=0;
-    int WTfiction=0;
+    int WTdrama=0;
     int WTcomedy=0;
 };
 
@@ -130,7 +130,7 @@ StatusType streaming_database::add_movie(int movieId, Genre genre, int views, bo
         return StatusType::INVALID_INPUT;
     }//invalid input check
 
-    if(movie_tree->FindNode(movie_tree->GetRoot(),movieId)!= nullptr){
+    if(movie_tree->FindNode(movieId)!= nullptr){
         return StatusType::FAILURE;
     }//this movie already exist
 
@@ -195,37 +195,37 @@ StatusType streaming_database::remove_movie(int movieId)
         return StatusType::INVALID_INPUT;
     }//input is invalid
 
-    if(movie_tree->FindNode(movie_tree->GetRoot(),movieId)== nullptr){
+    if(movie_tree->FindNode(movieId)== nullptr){
         return StatusType::FAILURE;
     }//this movie doesn't exist
 
 
-    Node<movie> *temp_node = movie_tree->FindNode(movie_tree->GetRoot(),movieId);
+    Node<movie> *temp_node = movie_tree->FindNode(movieId);
     int view = temp_node->GetElement()->views;
     int rate = temp_node->GetElement()->rate;
     Genre genre=temp_node->GetElement()->genre;
 
-    movie_tree->RemoveNode(movieId);//remove from movie tree
+    movie_tree->RemoveNode(temp_node);//remove from movie tree
 
 
     //remove from genre tree
     if (genre==Genre::DRAMA){
-        temp_node=drama_tree->FindNodeInGenre(drama_tree->GetRoot(),movieId,rate,view);
+        temp_node=drama_tree->FindNodeInGenre(movieId, rate , view);
         drama_tree->RemoveNode(temp_node);
         num_of_drama--;
     }
     else if(genre==Genre::ACTION){
-        temp_node=action_tree->FindNodeInGenre(action_tree->GetRoot(),movieId,rate,view);
+        temp_node=action_tree->FindNodeInGenre(movieId, rate , view);
         action_tree->RemoveNode(temp_node);
         num_of_action--;
     }
     else if (genre==Genre::COMEDY){
-        temp_node=comedy_tree->FindNodeInGenre(comedy_tree->GetRoot(),movieId,rate,view);
+        temp_node=comedy_tree->FindNodeInGenre(movieId, rate , view);
         comedy_tree->RemoveNode(temp_node);
         num_of_comedy--;
     }
     else if (genre==Genre::FANTASY){
-        temp_node=fantasy_tree->FindNodeInGenre(fantasy_tree->GetRoot(),movieId,rate,view);
+        temp_node=fantasy_tree->FindNodeInGenre(movieId, rate , view);
         fantasy_tree->RemoveNode(temp_node);
         num_of_fantasy--;
     }
@@ -239,7 +239,7 @@ StatusType streaming_database::add_user(int userId, bool isVip)
         return StatusType::INVALID_INPUT;
     }
 
-    if(user_tree->FindNode(user_tree->GetRoot(),userId)!= nullptr){
+    if(user_tree->FindNode(userId)!= nullptr){
         return StatusType::FAILURE;
     }//this user already exist
 
@@ -283,11 +283,11 @@ StatusType streaming_database::remove_user(int userId)
         return StatusType::INVALID_INPUT;
     }
 
-    if(user_tree->FindNode(user_tree->GetRoot(),userId)== nullptr){
+    if(user_tree->FindNode(userId)== nullptr){
         return StatusType::FAILURE;
     }//this user doesn't exist
 
-    Node<user>* user_to_remove= user_tree->FindNode(user_tree->GetRoot(),userId);
+    Node<user>* user_to_remove= user_tree->FindNode(userId);
 
     if(user_to_remove->GetElement()->group!= nullptr) {
         group group1 = user_to_remove->GetElement()->group;
@@ -296,12 +296,12 @@ StatusType streaming_database::remove_user(int userId)
         user1->naction += group1->WTaction;
         user1->ncomedy += group1->WTcomedy;
         user1->nfantasy += group1->WTfantasy;
-        user1->nfiction += group1->WTfiction;
+        user1->ndrama += group1->WTdrama;
 
         group1->Naction -= user1->naction;
         group1->Ncomedy -= user1->ncomedy;
         group1->Nfantasy -= user1->nfantasy;
-        group1->Nfiction -= user1->nfiction;
+        group1->Ndrama -= user1->ndrama;
 
         group1->usergroup_tree->RemoveNode(userId);
         group1->numberOfUser--;
@@ -318,7 +318,7 @@ StatusType streaming_database::add_group(int groupId)
         return StatusType::INVALID_INPUT;
     }
 
-    if(group_tree->FindNode(group_tree->GetRoot(),groupId)!= nullptr){
+    if(group_tree->FindNode(groupId)!= nullptr){
         return StatusType::FAILURE;
     }//this group already exist
 
@@ -366,7 +366,7 @@ void passingOnTheTree(Node<user> *node, group group1) {
     user1->naction += group1->WTaction;
     user1->ncomedy += group1->WTcomedy;
     user1->nfantasy += group1->WTfantasy;
-    user1->nfiction += group1->WTfiction;
+    user1->ndrama += group1->WTdrama;
 }
 
 StatusType streaming_database::remove_group(int groupId)
@@ -376,11 +376,11 @@ StatusType streaming_database::remove_group(int groupId)
         return StatusType::INVALID_INPUT;
     }
 
-    if(group_tree->FindNode(group_tree->GetRoot(),groupId)== nullptr){
+    if(group_tree->FindNode(groupId)== nullptr){
         return StatusType::FAILURE;
     }//this group doesn't exist
 
-    Node<group> *group_to_remove = group_tree->FindNode(group_tree->GetRoot(),groupId);
+    Node<group> *group_to_remove = group_tree->FindNode(groupId);
     group group1=group_to_remove->GetElement();
 
     //fix group pointer and ngenre in user
@@ -401,22 +401,22 @@ StatusType streaming_database::add_user_to_group(int userId, int groupId)
         return StatusType::INVALID_INPUT;
     }
 
-    if(group_tree->FindNode(group_tree->GetRoot(),groupId)== nullptr){
+    if(group_tree->FindNode(groupId)== nullptr){
         return StatusType::FAILURE;
     }//this group dosent exist
 
-    if(user_tree->FindNode(user_tree->GetRoot(),userId)== nullptr){
+    if(user_tree->FindNode(userId)== nullptr){
         return StatusType::FAILURE;
     }//this user dosent exist
 
-    Node<user> *user_to_add = user_tree->FindNode(user_tree->GetRoot(),userId);
+    Node<user> *user_to_add = user_tree->FindNode(userId);
     user user1=user_to_add->GetElement();
 
     if(user1->group!= nullptr){
         return StatusType::FAILURE;
     }//the user is already in a group
 
-    Node<group> *group_to_add_in = group_tree->FindNode(group_tree->GetRoot(),groupId);
+    Node<group> *group_to_add_in = group_tree->FindNode(groupId);
     group group1=group_to_add_in->GetElement();
 
     group1->usergroup_tree->InsertNode(user_to_add);
@@ -431,12 +431,12 @@ StatusType streaming_database::add_user_to_group(int userId, int groupId)
     group1->Naction += user1->naction;
     group1->Ncomedy += user1->ncomedy;
     group1->Nfantasy += user1->nfantasy;
-    group1->Nfiction += user1->nfiction;
+    group1->Ndrama += user1->ndrama;
 
     user1->naction -= group1->WTaction;
     user1->ncomedy -= group1->WTcomedy;
     user1->nfantasy -= group1->WTfantasy;
-    user1->nfiction -= group1->WTfiction;
+    user1->ndrama -= group1->WTdrama;
 
     return StatusType::SUCCESS;
 }
@@ -447,18 +447,18 @@ StatusType streaming_database::user_watch(int userId, int movieId)
         return StatusType::INVALID_INPUT;
     }
 
-    if(movie_tree->FindNode(movie_tree->GetRoot(),movieId)== nullptr){
+    if(movie_tree->FindNode(movieId)== nullptr){
         return StatusType::FAILURE;
     }//this movie dosent exist
 
-    if(user_tree->FindNode(user_tree->GetRoot(),userId)== nullptr){
+    if(user_tree->FindNode(userId)== nullptr){
         return StatusType::FAILURE;
     }//this user dosent exist
 
-    Node<user> *user_to_add = user_tree->FindNode(user_tree->GetRoot(),userId);
+    Node<user> *user_to_add = user_tree->FindNode(userId);
     user user1=user_to_add->GetElement();
 
-    Node<movie> *movie_to_watch = movie_tree->FindNode(movie_tree->GetRoot(),movieId);
+    Node<movie> *movie_to_watch = movie_tree->FindNode(movieId);
     movie movie1=movie_to_watch->GetElement();
 
     if( movie1->vipOnly && !user1->vip){
@@ -469,8 +469,8 @@ StatusType streaming_database::user_watch(int userId, int movieId)
     group group1=user1->group;
 
     if (genre_of_the_film==Genre::DRAMA){
-        user1->nfiction++;
-        group1->Nfiction++;
+        user1->ndrama++;
+        group1->Ndrama++;
     }
     else if(genre_of_the_film==Genre::ACTION){
         user1->naction++;
@@ -498,18 +498,18 @@ StatusType streaming_database::group_watch(int groupId,int movieId)
         return StatusType::INVALID_INPUT;
     }
 
-    if(movie_tree->FindNode(movie_tree->GetRoot(),movieId)== nullptr){
+    if(movie_tree->FindNode(movieId)== nullptr){
         return StatusType::FAILURE;
     }//this movie dosent exist
 
-    if(group_tree->FindNode(group_tree->GetRoot(),groupId)== nullptr){
+    if(group_tree->FindNode(groupId)== nullptr){
         return StatusType::FAILURE;
     }//this group dosent exist
 
-    Node<movie> *movie_to_watch = movie_tree->FindNode(movie_tree->GetRoot(),movieId);
+    Node<movie> *movie_to_watch = movie_tree->FindNode(movieId);
     movie movie1=movie_to_watch->GetElement();
 
-    Node<group> *group_watch = group_tree->FindNode(group_tree->GetRoot(),groupId);
+    Node<group> *group_watch = group_tree->FindNode(groupId);
     group group1=group_watch->GetElement();
 
     if (group1->numberOfUser==0){
@@ -523,8 +523,8 @@ StatusType streaming_database::group_watch(int groupId,int movieId)
     Genre genre_of_the_film=movie1->genre;
 
     if (genre_of_the_film==Genre::DRAMA){
-        group1->WTfiction++;
-        group1->Nfiction += group1->numberOfUser;
+        group1->WTdrama++;
+        group1->Ndrama += group1->numberOfUser;
     }
     else if(genre_of_the_film==Genre::ACTION){
         group1->WTaction++;
@@ -580,24 +580,35 @@ StatusType streaming_database::get_all_movies(Genre genre, int *const output)
     if(num_of_fantasy+num_of_comedy+num_of_action+num_of_drama==0){
         return StatusType::FAILURE;
     }
+    output_t<int> count_ans= get_all_movies_count(genre);
+    int size=count_ans.ans();
+    //int* to_fill[size];
 
     int* get_in_order;
     if (genre != Genre::NONE) {
-        if (genre == Genre::DRAMA && num_of_drama == 0) {
-            return StatusType::FAILURE;
-            drama_tree->In
-        }
-        else if (genre == Genre::ACTION && num_of_action == 0) {
-            return StatusType::FAILURE;
-        }
-        else if (genre == Genre::COMEDY && num_of_comedy == 0) {
-            return StatusType::FAILURE;
-        }
-        else if (genre == Genre::FANTASY && num_of_fantasy == 0) {
+        if ((genre == Genre::DRAMA && num_of_drama == 0) ||(genre == Genre::ACTION && num_of_action == 0)
+        || (genre == Genre::COMEDY && num_of_comedy == 0) ||(genre == Genre::FANTASY && num_of_fantasy == 0)){
             return StatusType::FAILURE;
         }
     }
 
+    if (genre != Genre::NONE) {
+        if (genre == Genre::DRAMA) {
+            drama_tree->Inorder(output, size);
+            return StatusType::SUCCESS;
+        } else if (genre == Genre::ACTION) {
+            action_tree->Inorder(output, size);
+            return StatusType::SUCCESS;
+        } else if (genre == Genre::COMEDY) {
+            comedy_tree->Inorder(output, size);
+            return StatusType::SUCCESS;
+        } else if (genre == Genre::FANTASY) {
+            fantasy_tree->Inorder(output, size);
+            return StatusType::SUCCESS;
+        }
+    }else{
+        //TODO:faire in order avec les 4 arbres enembles das le cas ou genre ==none
+    }
 
     //output[0] = 4001;
     //output[1] = 4002;
@@ -606,6 +617,33 @@ StatusType streaming_database::get_all_movies(Genre genre, int *const output)
 
 output_t<int> streaming_database::get_num_views(int userId, Genre genre)
 {
+    if(userId<=0){
+        return StatusType::INVALID_INPUT;
+    }
+
+    if(user_tree->FindNode(userId)== nullptr){
+        return StatusType::FAILURE;
+    }//this user dosent exist
+
+    Node<user> *user_to_add = user_tree->FindNode(userId);
+    user user1=user_to_add->GetElement();
+
+    group group1=user1->group;
+    int num_of_view=0;
+
+    if (genre == Genre::DRAMA) {
+        num_of_view= (user1->ndrama) + (group1->WTdrama);
+    } else if (genre == Genre::ACTION) {
+        num_of_view= (user1->naction) + (group1->WTaction);
+
+    } else if (genre == Genre::COMEDY) {
+        num_of_view= (user1->ncomedy) + (group1->WTcomedy);
+
+    } else if (genre == Genre::FANTASY) {
+        num_of_view= (user1->nfantasy) + (group1->WTfantasy);
+    }
+
+
 	// TODO: Your code goes here
 	return 2008;
 }
