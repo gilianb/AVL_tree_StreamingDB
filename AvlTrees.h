@@ -79,24 +79,14 @@ public:
 
     Node<T>* FindNode(Node<T>* root, int key, int player_id);
 
-    Node<T>* FindNodeInGenre(Node<T>* node_to_return);
-
-    Node<T>*  FindNodeInGenre(int key, int rate , int view);
+    Node<T>*  FindNodeInGenre(int key, double rate , int view);
 
 
     int InorderVisit(Node<T>* node, int* array, int i);
 
-    int CountNodesOfTree(Node<T>* root);
-
-    AVLResults InsertNode(int key, T& element, Node<T>* node_added);
-
-    AVLResults InsertNodeInGenre(Node<T>* node);
-
-    AVLResults InsertNodeInGenre(int key, int rate , int view);
-
     AVLResults InsertNode(Node<T>* node);
 
-    AVLResults InsertNode(int key, T& element, int PlayerID, Node<T>* added_node);
+    AVLResults InsertNodeInGenre(Node<T>* node);
 
     void Check_And_Fix_BF(Node<T>* check);
 
@@ -120,10 +110,7 @@ public:
 
     AVLResults RotateRR(Node<T>* node);
 
-
-    void ReverseInorder(Node<T>* node, int* i);
-
-    void Inorder(int* array, int size);
+    void ReverseInorder(int* array, int size);
 
     // Node<T>* ReplaceNodeByAnother(Node<T>* last, Node<T>* new_node);
 };
@@ -326,17 +313,25 @@ Node<T>* Avl_tree<T>::FindNode(int key_to_find) const{
         else {
             node_to_return=node_to_return->GetNodeRight();
             current_key=node_to_return->GetKey();
-        }
+        }Node<T>* node_to_return = root;
     }
     return node_to_return;
 }
 template <class T>
-Node<T>* Avl_tree<T>::FindNodeInGenre(Node<T>* node_to_return){
+Node<T>* Avl_tree<T>::FindNodeInGenre(int key, double grade, int views){
     if (root == nullptr)
     {
         return nullptr;
     }
-    
+    Node<T>* node_to_return = root;
+    while (key != node_to_return->GetKey() && node_to_return != nullptr){
+        if(grade > node_to_return->GetKeyGrade() || (grade == node_to_return->GetKeyGrade() && views > node_to_return->GetKeyView()) || 
+        (grade == node_to_return->GetKeyGrade() && views == node_to_return->GetKeyView() && key < node_to_return->GetKey())){
+            node_to_return = node_to_return->GetNodeRight();
+        }
+        else node_to_return = node_to_return->GetNodeLeft();
+    }
+
     return node_to_return;
 }
 
@@ -351,6 +346,7 @@ AVLResults Avl_tree<T>::InsertNode(Node<T>* node){
     while (current_node!= nullptr){
         if(current_node->GetKey() < node->GetKey()){
             if (current_node->GetNodeRight()== nullptr){
+                current_node->SetNodeRight(node);
                 break;
             }
             current_node=current_node->GetNodeRight();
@@ -358,17 +354,12 @@ AVLResults Avl_tree<T>::InsertNode(Node<T>* node){
         }
         else{
             if (current_node->GetNodeLeft()== nullptr){
+                current_node->SetNodeLeft(node);
                 break;
             }
             current_node=current_node->GetNodeLeft();
             continue;
         }
-    }
-    if(current_node->GetKey() < node->GetKey()) {
-        current_node->SetNodeRight(node);
-    }
-    if(current_node->GetKey() > node->GetKey()) {
-        current_node->SetNodeLeft(node);
     }
     node->SetFatherNode(current_node);
     if(current_node == this->GetBiggestNode() && current_node->GetNodeRight() == node) this->SetBiggestNode(node);
@@ -379,6 +370,35 @@ AVLResults Avl_tree<T>::InsertNode(Node<T>* node){
 
 template <class T>
 AVLResults Avl_tree<T>::InsertNodeInGenre(Node<T>* node){
+    if (root== nullptr){
+        root = node;
+        this->SetBiggestNode(node);
+        return AVL_SUCCESS;
+    }
+    Node<T>* current_node=root;
+    while (current_node!= nullptr){
+        if(node->GetKeyGrade() > current_node->GetKeyGrade() || (node->GetKeyGrade() == current_node->GetKeyGrade() && node->GetKeyView() > current_node->GetKeyView()) || 
+        (node->GetKeyGrade() == current_node->GetKeyGrade() && node->GetKeyView() == current_node->GetKeyView() && node->GetKey() < current_node->GetKey())){
+            if (current_node->GetNodeRight()== nullptr){
+                current_node->SetNodeRight(node);
+                break;
+            }
+            current_node=current_node->GetNodeRight();
+            continue;
+        }
+        else{
+            if (current_node->GetNodeLeft()== nullptr){
+                current_node->SetNodeLeft(node);
+                break;
+            }
+            current_node=current_node->GetNodeLeft();
+            continue;
+        }
+    }
+    node->SetFatherNode(current_node);
+    if(current_node == this->GetBiggestNode() && current_node->GetNodeRight() == node) this->SetBiggestNode(node);
+    // time to check the BF
+    this->Check_And_Fix_BF(node);
     return AVL_SUCCESS;
 }
 
@@ -626,6 +646,11 @@ AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
         this->Swap(node_to_remove,node_to_swap);
         return this->RemoveNode(node_to_remove);
     }
+}
+template<class T>
+void Avl_tree<T>::ReverseInorder(int* array, int size){
+    int i=0;
+    AuxReverseInOrder(array, i);
 }
 
 #endif //MIVNEWET1_AVLTREES_H
