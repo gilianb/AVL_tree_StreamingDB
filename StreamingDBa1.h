@@ -16,12 +16,31 @@
 #define STREAMINGDBA1_H_
 
 #include "wet1util.h"
+#include "AvlTrees.h"
+
+typedef struct movie_t *movie;
+typedef struct user_t *user;
+typedef struct group_t *group;
+
+
+void passingOnTheTree(Node<user>* node);
+
+
 
 class streaming_database {
 private:
-	//
-	// Here you may add anything you want
-	//
+    Avl_tree<movie> *movie_tree;
+    Avl_tree<user> *user_tree;
+    Avl_tree<group> *group_tree;
+    Avl_tree<movie> *comedy_tree;
+    Avl_tree<movie> *drama_tree;
+    Avl_tree<movie> *action_tree;
+    Avl_tree<movie> *fantasy_tree;
+    int num_of_comedy;
+    int num_of_drama;
+    int num_of_action;
+    int num_of_fantasy;
+
 	
 public:
 	// <DO-NOT-MODIFY> {
@@ -60,5 +79,6 @@ public:
 	
 	// } </DO-NOT-MODIFY>
 };
+
 
 #endif // STREAMINGDBA1_H_
