@@ -54,8 +54,8 @@ template <class T>
 class Avl_tree {
 private:
     Node<T>* root;
+    Node<T>* biggest_node;
     //Node<T>* CopyNodes(Node<T>* node);
-    //Node<T>* biggestNodes;
 public:
     Avl_tree();
 
@@ -65,9 +65,13 @@ public:
 
     void AuxDistructorTree(Node<T>* node);
 
-    Node<T>* GetRoot();
+    Node<T>* GetRoot() ;
+
+    Node<T>* GetBiggestNode() const;
 
     void SetRoot( Node<T>* new_root);
+
+    Node<T>* SetBiggestNode(Node<T>* new_biggest);
 
     Node<T>* FindNode(int key) const;
 
@@ -107,7 +111,6 @@ public:
 
     AVLResults RotateRR(Node<T>* node);
 
-    Node<T>* Get_biggest_node();
 
     void ReverseInorder(Node<T>* node, int* i);
 
@@ -384,15 +387,31 @@ template <class T>
 Avl_tree<T>::Avl_tree(Node<T>* root) : root(root) {}
 
 template <class T>
-Avl_tree<T>::~Avl_tree() = default;
+Avl_tree<T>::~Avl_tree(){
+    this->AuxDistructorTree(root);
+}
 
+template <class T>
+void Avl_tree<T>::AuxDistructorTree( Node<T>* node){
+    if(node->GetNodeLeft()!= nullptr ) AuxDistructorTree(node->GetNodeLeft());
+    if(node->GetNodeRight()!= nullptr ) AuxDistructorTree(node->GetNodeRight());
+    delete node;
 
+}
 template <class T>
 void Avl_tree<T>::SetRoot( Node<T>* new_root)
 {
     this->root = new_root;
 }
 
+template<class T>
+Node<T>* Avl_tree<T>::GetBiggestNode() const{
+    return this->biggest_node;
+}
+template<class T>
+Node<T>* Avl_tree<T>::SetBiggestNode(Node<T>* new_biggest) {
+    this->biggest_node = new_biggest;
+}
 
 template <class T>
 Node<T>* Avl_tree<T>::FindNode(int key_to_find) const{
@@ -436,14 +455,9 @@ Node<T>* Avl_tree<T>::FindNodeInGenre(Node<T>* node_to_return){
 
 template <class T>
 AVLResults Avl_tree<T>::InsertNode(Node<T>* node){
-
-    //rajouter les cas ou le AVL fail
-    node->SetNodeLeft(nullptr);
-    node->SetNodeRight(nullptr);
-    node->SetHeight(0);
     if (root== nullptr){
-        node->SetFatherNode(nullptr);
         root = node;
+        this->SetBiggestNode(node);
         return AVL_SUCCESS;
     }
     Node<T>* current_node=root;
@@ -470,6 +484,7 @@ AVLResults Avl_tree<T>::InsertNode(Node<T>* node){
         current_node->SetNodeLeft(node);
     }
     node->SetFatherNode(current_node);
+    if(current_node == this->GetBiggestNode() && current_node->GetNodeRight() == node) this->SetBiggestNode(node);
     // time to check the BF
     this->Check_And_Fix_BF(node);
     return AVL_SUCCESS;
@@ -941,15 +956,14 @@ void Avl_tree<T>::Check_And_Fix_BF(Node<T>* check){
 }
 template <class T>
 AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
-    if (key_to_remove<0)
-        return AVL_NULL_ARGUMENT;
 
     if (node_to_remove== nullptr)
         return AVL_NODE_NO_EXIST;
         //if it s a leaf or the root alone
     if (node_to_remove->GetNodeRight()== nullptr && node_to_remove->GetNodeLeft()== nullptr){
         if(node_to_remove==root){
-            root = nullptr
+            root = nullptr;
+            this->SetBiggestNode(nullptr);
         }
         else{
             if(node_to_remove->GetFatherNode()->GetNodeRight== node_to_remove){
@@ -959,6 +973,7 @@ AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
                 node_to_remove->GetFatherNode()->SetNodeLeft(nullptr);
             }
             this->Check_And_Fix_BF(node_to_remove->GetFatherNode());
+            if(node_to_remove== this->GetBiggestNode()) this->SetBiggestNode(node_to_remove->GetFatherNode());
         }
     }
     else if (node_to_remove->GetNodeRight()== nullptr || node_to_remove->GetNodeLeft()== nullptr){
@@ -970,6 +985,7 @@ AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
         son_of_node_to_remove->SetFatherNode(node_to_remove->GetFatherNode());
         if(node_to_remove==root){
             root = son_of_node_to_remove;
+            if(node_to_remove== this->GetBiggestNode()) this->SetBiggestNode(son_of_node_to_remove);
         }
         else{
             if(node_to_remove->GetFatherNode()->GetNodeRight== node_to_remove){
@@ -978,6 +994,7 @@ AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
             else{
                 node_to_remove->GetFatherNode()->SetNodeLeft(son_of_node_to_remove);
             }
+            if(node_to_remove== this->GetBiggestNode()) this->SetBiggestNode(son_of_node_to_remove);
         }
         this->Check_And_Fix_BF(son_of_node_to_remove);
         delete node_to_remove;
