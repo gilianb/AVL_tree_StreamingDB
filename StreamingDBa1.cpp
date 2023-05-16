@@ -725,6 +725,7 @@ StatusType streaming_database::get_all_movies(Genre genre, int *const output)
             return StatusType::SUCCESS;
         }
     }else{
+        ReverseInOrderOfNone(output, size,drama_tree,comedy_tree,action_tree,fantasy_tree);
         //TODO:faire in order avec les 4 arbres enembles das le cas ou genre ==none
     }
 

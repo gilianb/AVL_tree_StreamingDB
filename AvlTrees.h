@@ -686,7 +686,7 @@ Node<T>* max(Node<T>* node1, Node<T>* node2, Node<T>* node3, Node<T>* node4){
 }
 
 template <class T>
-void ReverseInOrderOfNone(int* array, int size, Avl_tree<T> tree1, Avl_tree<T> tree2, Avl_tree<T> tree3, Avl_tree<T> tree4){
+void ReverseInOrderOfNone(int* array, int size, Avl_tree<T*> *tree1, Avl_tree<T*> *tree2, Avl_tree<T*> *tree3, Avl_tree<T*> *tree4){
     int i = 0;
     Node<T>*  max_node, node1= tree1->GetBiggestNode(), node2 = tree2->GetBiggestNode(), node3= tree3->GetBiggestNode(), node4 = tree4->GetBiggestNode();
     while( i < size){
@@ -696,7 +696,7 @@ void ReverseInOrderOfNone(int* array, int size, Avl_tree<T> tree1, Avl_tree<T> t
         else if(max_node==node2) node2 = tree2->FindPreviousNode(node2);
         else if(max_node==node3) node3 = tree3->FindPreviousNode(node3);
         else if(max_node==node4) node4 = tree4->FindPreviousNode(node4);
-        i+=1;
+        i++;
 
     }
 }
