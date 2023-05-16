@@ -75,14 +75,12 @@ public:
 
     void SetBiggestNode(Node<T>* new_biggest);
 
-    Node<T>* FindNode(int key) const;
+    Node<T>* FindPreviousNode(Node<T>* node) const;
 
-    Node<T>* FindNode(Node<T>* root, int key, int player_id);
+    Node<T>* FindNode(int key) const;
 
     Node<T>*  FindNodeInGenre(int key, double rate , int view);
 
-
-    int InorderVisit(Node<T>* node, int* array, int i);
 
     AVLResults InsertNode(Node<T>* node);
 
@@ -295,6 +293,19 @@ Node<T>* Avl_tree<T>::GetBiggestNode() const{
 template<class T>
 void Avl_tree<T>::SetBiggestNode(Node<T>* new_biggest) {
     this->biggest_node = new_biggest;
+}
+
+template <class T>
+Node<T>* Avl_tree<T>::FindPreviousNode(Node<T>* node) const{
+    if(node->GetNodeLeft()!=nullptr && node->GetNodeLeft()->GetNodeRight()==nullptr) return node->GetNodeLeft();
+    if(node->GetNodeLeft()!=nullptr && node->GetNodeLeft()->GetNodeRight()!=nullptr){
+        node = node->GetNodeLeft()->GetNodeRight();
+        while(node->GetNodeRight()!=nullptr) node = node ->GetNodeRight();
+        return node;
+    }
+    while(node->GetFatherNode()->GetNodeLeft()== node && node->GetFatherNode()!=nullptr) node = node->GetFatherNode();
+    if(node->GetFatherNode()=nullptr) return nullptr; // which means we arrived at the root and node is the minimum of the tree
+    else return node->GetFatherNode();
 }
 
 template <class T>
@@ -650,7 +661,43 @@ AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
 template<class T>
 void Avl_tree<T>::ReverseInorder(int* array, int size){
     int i=0;
-    AuxReverseInOrder(array, i);
+    Node<T>* node = this->GetBiggestNode();
+    while(node != nullptr){
+        array[i] = node -> GetKey();
+        i+=1;
+        node =this->FindPreviousNode(node);
+    }
+}
+
+template<class T>
+Node<T>* max(Node<T>* node1, Node<T>* node2){
+    if(node1 == nullptr) return node2;
+    if(node2 == nullptr) return node1;
+    if(node1->GetKeyGrade() > node2->GetKeyGrade() || (node1->GetKeyGrade() == node2->GetKeyGrade() && node1->GetKeyView() > node2->GetKeyView()) || 
+        (node1->GetKeyGrade() == node2->GetKeyGrade() && node1->GetKeyView() == node2->GetKeyView() && node1->GetKey() < node2->GetKey())){
+            return node1;
+        }
+}
+
+template<class T>
+Node<T>* max(Node<T>* node1, Node<T>* node2, Node<T>* node3, Node<T>* node4){
+    return max(max(node1, node2), max(node3, node4));
+}
+
+template <class T>
+void ReverseInOrderOfNone(int* array, int size, Avl_tree<T> tree1, Avl_tree<T> tree2, Avl_tree<T> tree3, Avl_tree<T> tree4){
+    int i = 0;
+    Node<T>*  max_node, node1= tree1->GetBiggestNode(), node2 = tree2->GetBiggestNode(), node3= tree3->GetBiggestNode(), node4 = tree4->GetBiggestNode();
+    while( i < size){
+        max_node= max(node1,node2,node3,node4);
+        array[i] = max_node->GetKey();
+        if(max_node==node1) node1 = tree1->FindPreviousNode(node1);
+        else if(max_node==node2) node2 = tree2->FindPreviousNode(node2);
+        else if(max_node==node3) node3 = tree3->FindPreviousNode(node3);
+        else if(max_node==node4) node4 = tree4->FindPreviousNode(node4);
+        i+=1;
+
+    }
 }
 
 #endif //MIVNEWET1_AVLTREES_H
