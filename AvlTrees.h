@@ -73,7 +73,7 @@ public:
 
     void SetRoot( Node<T>* new_root);
 
-    Node<T>* SetBiggestNode(Node<T>* new_biggest);
+    void SetBiggestNode(Node<T>* new_biggest);
 
     Node<T>* FindNode(int key) const;
 
@@ -93,8 +93,6 @@ public:
     AVLResults InsertNodeInGenre(Node<T>* node);
 
     AVLResults InsertNodeInGenre(int key, int rate , int view);
-
-
 
     AVLResults InsertNode(Node<T>* node);
 
@@ -247,7 +245,7 @@ int Node<T>::GetBalancedFactor() {
 
     int height_right=-1;
     if (right_son!= nullptr){
-        height_right= right_son->getHeight();
+        height_right= right_son->GetHeight();
     }
     return (height_left-height_right);
 }
@@ -308,7 +306,7 @@ Node<T>* Avl_tree<T>::GetBiggestNode() const{
     return this->biggest_node;
 }
 template<class T>
-Node<T>* Avl_tree<T>::SetBiggestNode(Node<T>* new_biggest) {
+void Avl_tree<T>::SetBiggestNode(Node<T>* new_biggest) {
     this->biggest_node = new_biggest;
 }
 
@@ -387,7 +385,7 @@ AVLResults Avl_tree<T>::InsertNodeInGenre(Node<T>* node){
 
 template <class T>
 void Avl_tree<T>::Swap(Node<T>* node_1, Node<T>* node_2){
-    int temp_height = node_1->GetHeight;
+    int temp_height = node_1->GetHeight();
     Node<T>* temp_left_son = node_1->GetNodeLeft();
     Node<T>* temp_right_son = node_1->GetNodeRight();
     Node<T>* temp_father_node = node_1->GetFatherNode();
@@ -406,18 +404,18 @@ void Avl_tree<T>::Swap(Node<T>* node_1, Node<T>* node_2){
     }
     else{
         if(father_node_1->GetNodeRight() == node_2){
-            father_node_1->SetNodeRight = node_1;
+            father_node_1->SetNodeRight(node_1);
         }
-        else father_node_1->SetNodeLeft = node_1;
+        else father_node_1->SetNodeLeft(node_1);
     }
     if(father_node_2 == nullptr){
         this->SetRoot(node_2);
     }
     else{
         if(father_node_2->GetNodeRight() == node_1){
-            father_node_2->SetNodeRight = node_2;
+            father_node_2->SetNodeRight(node_2);
         }
-        else father_node_2->SetNodeLeft = node_2;
+        else father_node_2->SetNodeLeft(node_2);
     }
     Node<T>* right_son_1 = node_1->GetNodeRight();
     if(right_son_1 != nullptr){
@@ -452,7 +450,7 @@ AVLResults Avl_tree<T>::RotateLL(Node<T>* B_node){
     }
     A_node->SetNodeRight(B_node);
     B_node->SetFatherNode(A_node);
-    B_node->SetNodeLeft(A_node_right());
+    B_node->SetNodeLeft(A_node_right);
     if(A_node_right != nullptr){
         A_node_right->SetFatherNode(B_node);
     }
@@ -564,12 +562,12 @@ void Avl_tree<T>::Check_And_Fix_BF(Node<T>* check){
             if(check->GetNodeRight()->GetBalancedFactor() == 1){
                 this->RotateRL(check);
             }
-            else this-> RotateRR;
+            else this->RotateRR(check);
         }
         else{
             check->SetNewHeight();
         }
-        check = check->GetFatherNode;
+        check = check->GetFatherNode();
     }
 }
 template <class T>
@@ -584,7 +582,7 @@ AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
             this->SetBiggestNode(nullptr);
         }
         else{
-            if(node_to_remove->GetFatherNode()->GetNodeRight== node_to_remove){
+            if(node_to_remove->GetFatherNode()->GetNodeRight()== node_to_remove){
                 node_to_remove->GetFatherNode()->SetNodeRight(nullptr);
             }
             else{
@@ -606,7 +604,7 @@ AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
             if(node_to_remove== this->GetBiggestNode()) this->SetBiggestNode(son_of_node_to_remove);
         }
         else{
-            if(node_to_remove->GetFatherNode()->GetNodeRight== node_to_remove){
+            if(node_to_remove->GetFatherNode()->GetNodeRight()== node_to_remove){
                 node_to_remove->GetFatherNode()->SetNodeRight(son_of_node_to_remove);
             }
             else{
@@ -627,7 +625,6 @@ AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
         }
         this->Swap(node_to_remove,node_to_swap);
         return this->RemoveNode(node_to_remove);
-
     }
 }
 
