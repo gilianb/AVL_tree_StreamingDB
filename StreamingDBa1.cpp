@@ -594,16 +594,16 @@ StatusType streaming_database::get_all_movies(Genre genre, int *const output)
 
     if (genre != Genre::NONE) {
         if (genre == Genre::DRAMA) {
-            drama_tree->Inorder(output, size);
+            drama_tree->ReverseInorder(output, size);
             return StatusType::SUCCESS;
         } else if (genre == Genre::ACTION) {
-            action_tree->Inorder(output, size);
+            action_tree->ReverseInorder(output, size);
             return StatusType::SUCCESS;
         } else if (genre == Genre::COMEDY) {
-            comedy_tree->Inorder(output, size);
+            comedy_tree->ReverseInorder(output, size);
             return StatusType::SUCCESS;
         } else if (genre == Genre::FANTASY) {
-            fantasy_tree->Inorder(output, size);
+            fantasy_tree->ReverseInorder(output, size);
             return StatusType::SUCCESS;
         }
     }else{
