@@ -284,8 +284,9 @@ Avl_tree<T>::~Avl_tree(){
 
 template <class T>
 void Avl_tree<T>::AuxDistructorTree( Node<T>* node){
-    if(node->GetNodeLeft()!= nullptr ) AuxDistructorTree(node->GetNodeLeft());
-    if(node->GetNodeRight()!= nullptr ) AuxDistructorTree(node->GetNodeRight());
+    if(node == nullptr) return;
+    AuxDistructorTree(node->GetNodeLeft());
+    AuxDistructorTree(node->GetNodeRight());
     delete node;
 
 }
