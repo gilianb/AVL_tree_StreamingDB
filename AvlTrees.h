@@ -677,6 +677,7 @@ Node<T>* max(Node<T>* node1, Node<T>* node2){
         (node1->GetKeyGrade() == node2->GetKeyGrade() && node1->GetKeyView() == node2->GetKeyView() && node1->GetKey() < node2->GetKey())){
             return node1;
         }
+    else return node2;
 }
 
 template<class T>
