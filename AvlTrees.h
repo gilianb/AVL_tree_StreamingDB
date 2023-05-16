@@ -29,15 +29,15 @@ class Node {
     Node* left_son;
     Node* right_son;
 public:
-    explicit Node(int key = -1, T element = nullptr, int height = 0, Node* father = nullptr, Node* left_son = nullptr,
+    explicit Node(int key = -1,double key_grade = -1, int key_view = -1, T element = nullptr, int height = 0, Node* father = nullptr, Node* left_son = nullptr,
                   Node* right_son = nullptr);
     ~Node();
     void SetKey(int key);
     int GetKey() const;
     void SetKeyView(int key);
     int GetKeyView() const;
-    void SetKeyGrade(int key);
-    int GetKeyGrade() const;
+    void SetKeyGrade(double key);
+    double GetKeyGrade() const;
     void SetElement(T element_to_set);
     T& GetElement();
     void SetHeight(int new_height);
@@ -116,8 +116,8 @@ public:
 
 
 template <class T>
-Node<T>::Node(int key, T element, int height, Node* father, Node* left_son, Node* right_son) :
-        key(key),key_grade(0), key_view(0), element(element), height(height), father(father), left_son(left_son), right_son(right_son) {}
+Node<T>::Node(int key, double key_grade, int key_view, T element, int height, Node* father, Node* left_son, Node* right_son) :
+        key(key),key_grade(key_grade), key_view(key_view), element(element), height(height), father(father), left_son(left_son), right_son(right_son) {}
 
 template <class T>
 Node<T>::~Node()
@@ -138,13 +138,13 @@ int Node<T>::GetKey() const
 }
 
 template <class T>
-void Node<T>::SetKeyGrade(int key_to_set)
+void Node<T>::SetKeyGrade(double key_to_set)
 {
     key_grade = key_to_set;
 }
 
 template <class T>
-int Node<T>::GetKeyGrade() const
+double Node<T>::GetKeyGrade() const
 {
     return key_grade;
 }
@@ -304,7 +304,7 @@ Node<T>* Avl_tree<T>::FindPreviousNode(Node<T>* node) const{
         return node;
     }
     while(node->GetFatherNode()->GetNodeLeft()== node && node->GetFatherNode()!=nullptr) node = node->GetFatherNode();
-    if(node->GetFatherNode()=nullptr) return nullptr; // which means we arrived at the root and node is the minimum of the tree
+    if((node->GetFatherNode()=nullptr)) return nullptr; // which means we arrived at the root and node is the minimum of the tree
     else return node->GetFatherNode();
 }
 
@@ -324,7 +324,7 @@ Node<T>* Avl_tree<T>::FindNode(int key_to_find) const{
         else {
             node_to_return=node_to_return->GetNodeRight();
             current_key=node_to_return->GetKey();
-        }Node<T>* node_to_return = root;
+        }
     }
     return node_to_return;
 }
@@ -336,8 +336,8 @@ Node<T>* Avl_tree<T>::FindNodeInGenre(int key, double grade, int views){
     }
     Node<T>* node_to_return = root;
     while (key != node_to_return->GetKey() && node_to_return != nullptr){
-        if(grade > node_to_return->GetKeyGrade() || (grade == node_to_return->GetKeyGrade() && views > node_to_return->GetKeyView()) || 
-        (grade == node_to_return->GetKeyGrade() && views == node_to_return->GetKeyView() && key < node_to_return->GetKey())){
+        if(grade > node_to_return->GetKeyGrade() || (grade == node_to_return->GetKeyGrade() && views > node_to_return->GetKeyView()) ||
+           (grade == node_to_return->GetKeyGrade() && views == node_to_return->GetKeyView() && key < node_to_return->GetKey())){
             node_to_return = node_to_return->GetNodeRight();
         }
         else node_to_return = node_to_return->GetNodeLeft();
@@ -388,8 +388,8 @@ AVLResults Avl_tree<T>::InsertNodeInGenre(Node<T>* node){
     }
     Node<T>* current_node=root;
     while (current_node!= nullptr){
-        if(node->GetKeyGrade() > current_node->GetKeyGrade() || (node->GetKeyGrade() == current_node->GetKeyGrade() && node->GetKeyView() > current_node->GetKeyView()) || 
-        (node->GetKeyGrade() == current_node->GetKeyGrade() && node->GetKeyView() == current_node->GetKeyView() && node->GetKey() < current_node->GetKey())){
+        if(node->GetKeyGrade() > current_node->GetKeyGrade() || (node->GetKeyGrade() == current_node->GetKeyGrade() && node->GetKeyView() > current_node->GetKeyView()) ||
+           (node->GetKeyGrade() == current_node->GetKeyGrade() && node->GetKeyView() == current_node->GetKeyView() && node->GetKey() < current_node->GetKey())){
             if (current_node->GetNodeRight()== nullptr){
                 current_node->SetNodeRight(node);
                 break;
@@ -673,10 +673,10 @@ template<class T>
 Node<T>* max(Node<T>* node1, Node<T>* node2){
     if(node1 == nullptr) return node2;
     if(node2 == nullptr) return node1;
-    if(node1->GetKeyGrade() > node2->GetKeyGrade() || (node1->GetKeyGrade() == node2->GetKeyGrade() && node1->GetKeyView() > node2->GetKeyView()) || 
-        (node1->GetKeyGrade() == node2->GetKeyGrade() && node1->GetKeyView() == node2->GetKeyView() && node1->GetKey() < node2->GetKey())){
-            return node1;
-        }
+    if(node1->GetKeyGrade() > node2->GetKeyGrade() || (node1->GetKeyGrade() == node2->GetKeyGrade() && node1->GetKeyView() > node2->GetKeyView()) ||
+       (node1->GetKeyGrade() == node2->GetKeyGrade() && node1->GetKeyView() == node2->GetKeyView() && node1->GetKey() < node2->GetKey())){
+        return node1;
+    }
     else return node2;
 }
 

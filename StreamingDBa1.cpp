@@ -4,7 +4,7 @@
 struct movie_t{
     int movieID=0;
     int views=0;
-    int rate=0;
+    double grade=0;
     bool vipOnly=false;
     Genre genre=Genre::NONE;
 
@@ -159,6 +159,8 @@ StatusType streaming_database::add_movie(int movieId, Genre genre, int views, bo
     }
 
     new_movie->SetKey(movieId);
+    // new_movie->SetKeygrade(grade1);
+    // new_movie->SetKeyView(view1);
     new_movie->SetElement(movie_to_add);
     new_movie->SetHeight(0);
     new_movie->SetFatherNode(nullptr);
@@ -202,7 +204,7 @@ StatusType streaming_database::remove_movie(int movieId)
 
     Node<movie> *temp_node = movie_tree->FindNode(movieId);
     int view = temp_node->GetElement()->views;
-    int rate = temp_node->GetElement()->rate;
+    double grade = temp_node->GetElement()->grade;
     Genre genre=temp_node->GetElement()->genre;
 
     movie_tree->RemoveNode(temp_node);//remove from movie tree
@@ -210,22 +212,22 @@ StatusType streaming_database::remove_movie(int movieId)
 
     //remove from genre tree
     if (genre==Genre::DRAMA){
-        temp_node=drama_tree->FindNodeInGenre(movieId, rate , view);
+        temp_node=drama_tree->FindNodeInGenre(movieId, grade , view);
         drama_tree->RemoveNode(temp_node);
         num_of_drama--;
     }
     else if(genre==Genre::ACTION){
-        temp_node=action_tree->FindNodeInGenre(movieId, rate , view);
+        temp_node=action_tree->FindNodeInGenre(movieId, grade , view);
         action_tree->RemoveNode(temp_node);
         num_of_action--;
     }
     else if (genre==Genre::COMEDY){
-        temp_node=comedy_tree->FindNodeInGenre(movieId, rate , view);
+        temp_node=comedy_tree->FindNodeInGenre(movieId, grade , view);
         comedy_tree->RemoveNode(temp_node);
         num_of_comedy--;
     }
     else if (genre==Genre::FANTASY){
-        temp_node=fantasy_tree->FindNodeInGenre(movieId, rate , view);
+        temp_node=fantasy_tree->FindNodeInGenre(movieId, grade , view);
         fantasy_tree->RemoveNode(temp_node);
         num_of_fantasy--;
     }
@@ -485,12 +487,69 @@ StatusType streaming_database::user_watch(int userId, int movieId)
         group1->Nfantasy++;
     }
 
-    //movie_to_watch->Setkey2()
+    //update the ets genre with the change of view
+    Genre genre1=movie1->genre;
+    double grade1= movie1->grade;
+    int view1 = movie1->views;
+
+    if (genre1 == Genre::DRAMA) {
+        movie_to_watch=drama_tree->FindNodeInGenre(movieId, grade1 , view1);
+
+    } else if (genre1 == Genre::ACTION) {
+        movie_to_watch=action_tree->FindNodeInGenre(movieId, grade1 , view1);
+
+    } else if (genre1 == Genre::COMEDY) {
+        movie_to_watch=comedy_tree->FindNodeInGenre(movieId, grade1 , view1);
+
+    } else if (genre1 == Genre::FANTASY) {
+        movie_to_watch=fantasy_tree->FindNodeInGenre(movieId, grade1 , view1);
+
+    }
+
     movie1->views++;
-    // TODO: update ets genre with new view
+    Node<movie> *new_movie = nullptr;
+     view1 = movie1->views;
+
+    try {
+        new_movie = new Node<movie>;
+    }
+    catch (std::bad_alloc &) {
+        return StatusType::ALLOCATION_ERROR;
+    }
+
+    new_movie->SetKey(movieId);
+    new_movie->SetKeyGrade(grade1);
+    new_movie->SetKeyView(view1);
+    new_movie->SetElement(movie1);
+    new_movie->SetHeight(0);
+    new_movie->SetFatherNode(nullptr);
+    new_movie->SetNodeLeft(nullptr);
+    new_movie->SetNodeRight(nullptr);
+
+    if (genre1==Genre::DRAMA){
+        drama_tree->RemoveNode(movie_to_watch);
+        drama_tree->InsertNodeInGenre(new_movie);
+
+    }
+    else if(genre1==Genre::ACTION){
+        action_tree->RemoveNode(movie_to_watch);
+        action_tree->InsertNodeInGenre(new_movie);
+
+    }
+    else if (genre1==Genre::COMEDY){
+        comedy_tree->RemoveNode(movie_to_watch);
+        comedy_tree->InsertNodeInGenre(new_movie);
+
+    }
+    else if (genre1==Genre::FANTASY){
+        fantasy_tree->RemoveNode(movie_to_watch);
+        fantasy_tree->InsertNodeInGenre(new_movie);
+    }
 
     return StatusType::SUCCESS;
 }
+
+
 
 StatusType streaming_database::group_watch(int groupId,int movieId)
 {
@@ -514,7 +573,7 @@ StatusType streaming_database::group_watch(int groupId,int movieId)
 
     if (group1->numberOfUser==0){
         return StatusType::FAILURE;
-    }
+    }//no people in the group
 
     if( movie1->vipOnly && !group1->vip){
         return StatusType::FAILURE;
@@ -539,17 +598,75 @@ StatusType streaming_database::group_watch(int groupId,int movieId)
         group1->Nfantasy += group1->numberOfUser;
     }
 
-    movie1->views += group1->numberOfUser;
 
-	// TODO: update ets genre with new view
+	//update ets genre with new view
 
+    Genre genre1=movie1->genre;
+    double grade1= movie1->grade;
+    int view1 = movie1->views;
+
+    if (genre1 == Genre::DRAMA) {
+        movie_to_watch=drama_tree->FindNodeInGenre(movieId, grade1 , view1);
+
+    } else if (genre1 == Genre::ACTION) {
+        movie_to_watch=action_tree->FindNodeInGenre(movieId, grade1 , view1);
+
+    } else if (genre1 == Genre::COMEDY) {
+        movie_to_watch=comedy_tree->FindNodeInGenre(movieId, grade1 , view1);
+
+    } else if (genre1 == Genre::FANTASY) {
+        movie_to_watch=fantasy_tree->FindNodeInGenre(movieId, grade1 , view1);
+
+    }
+
+    movie1->views += group1->numberOfUser;// new view update
+
+    Node<movie> *new_movie = nullptr;
+    view1 = movie1->views;
+
+    try {
+        new_movie = new Node<movie>;
+    }
+    catch (std::bad_alloc &) {
+        return StatusType::ALLOCATION_ERROR;
+    }
+
+    new_movie->SetKey(movieId);
+    new_movie->SetKeyGrade(grade1);
+    new_movie->SetKeyView(view1);
+    new_movie->SetElement(movie1);
+    new_movie->SetHeight(0);
+    new_movie->SetFatherNode(nullptr);
+    new_movie->SetNodeLeft(nullptr);
+    new_movie->SetNodeRight(nullptr);
+
+    if (genre1==Genre::DRAMA){
+        drama_tree->RemoveNode(movie_to_watch);
+        drama_tree->InsertNodeInGenre(new_movie);
+
+    }
+    else if(genre1==Genre::ACTION){
+        action_tree->RemoveNode(movie_to_watch);
+        action_tree->InsertNodeInGenre(new_movie);
+
+    }
+    else if (genre1==Genre::COMEDY){
+        comedy_tree->RemoveNode(movie_to_watch);
+        comedy_tree->InsertNodeInGenre(new_movie);
+
+    }
+    else if (genre1==Genre::FANTASY){
+        fantasy_tree->RemoveNode(movie_to_watch);
+        fantasy_tree->InsertNodeInGenre(new_movie);
+    }
 
 	return StatusType::SUCCESS;
 }
 
+
+
 output_t<int> streaming_database::get_all_movies_count(Genre genre)
 {
-    // TODO: Your code goes here
     int get_count=0;
     if (genre==Genre::DRAMA){
         get_count = num_of_drama;
@@ -571,9 +688,10 @@ output_t<int> streaming_database::get_all_movies_count(Genre genre)
 
 }
 
+
+
 StatusType streaming_database::get_all_movies(Genre genre, int *const output)
 {
-    // TODO: Your code goes here
     if(output== nullptr){
         return StatusType::INVALID_INPUT;
     }
@@ -615,6 +733,8 @@ StatusType streaming_database::get_all_movies(Genre genre, int *const output)
     return StatusType::SUCCESS;
 }
 
+
+
 output_t<int> streaming_database::get_num_views(int userId, Genre genre)
 {
     if(userId<=0){
@@ -641,24 +761,157 @@ output_t<int> streaming_database::get_num_views(int userId, Genre genre)
 
     } else if (genre == Genre::FANTASY) {
         num_of_view= (user1->nfantasy) + (group1->WTfantasy);
+    }else {
+        num_of_view= (user1->ndrama) + (group1->WTdrama) + (user1->naction) +(group1->WTaction)
+                + (user1->ncomedy) + (group1->WTcomedy) +(user1->nfantasy) + (group1->WTfantasy);
     }
 
-
-	// TODO: Your code goes here
-	return 2008;
+	return num_of_view;
 }
 
 StatusType streaming_database::rate_movie(int userId, int movieId, int rating)
 {
-    // TODO: Your code goes here
+    if (userId<=0 || movieId<=0 ||rating<0 || rating>100){
+        return StatusType::INVALID_INPUT;
+    }
+
+    if(movie_tree->FindNode(movieId)== nullptr){
+        return StatusType::FAILURE;
+    }//this movie dosent exist
+
+    if(user_tree->FindNode(userId)== nullptr){
+        return StatusType::FAILURE;
+    }//this user dosent exist
+
+    Node<user> *user_to_add = user_tree->FindNode(userId);
+    user user1=user_to_add->GetElement();
+
+    Node<movie> *movie_to_watch = movie_tree->FindNode(movieId);
+    movie movie1=movie_to_watch->GetElement();
+
+    if( movie1->vipOnly && !user1->vip){
+        return StatusType::FAILURE;
+    }
+
+
+    //update the tree genre becaue of the grade change
+    Genre genre1=movie1->genre;
+    double grade1= movie1->grade;
+    int view1 = movie1->views;
+
+    if (genre1 == Genre::DRAMA) {
+        movie_to_watch=drama_tree->FindNodeInGenre(movieId, grade1 , view1);
+
+    } else if (genre1 == Genre::ACTION) {
+        movie_to_watch=action_tree->FindNodeInGenre(movieId, grade1 , view1);
+
+    } else if (genre1 == Genre::COMEDY) {
+        movie_to_watch=comedy_tree->FindNodeInGenre(movieId, grade1 , view1);
+
+    } else if (genre1 == Genre::FANTASY) {
+        movie_to_watch=fantasy_tree->FindNodeInGenre(movieId, grade1 , view1);
+
+    }
+
+    movie1->grade= (movie1->grade + rating)/2;// update the grade
+
+    Node<movie> *new_movie = nullptr;
+    grade1= movie1->grade;
+
+    try {
+        new_movie = new Node<movie>;
+    }
+    catch (std::bad_alloc &) {
+        return StatusType::ALLOCATION_ERROR;
+    }
+
+    new_movie->SetKey(movieId);
+    new_movie->SetKeyGrade(grade1);
+    new_movie->SetKeyView(view1);
+    new_movie->SetElement(movie1);
+    new_movie->SetHeight(0);
+    new_movie->SetFatherNode(nullptr);
+    new_movie->SetNodeLeft(nullptr);
+    new_movie->SetNodeRight(nullptr);
+
+    if (genre1==Genre::DRAMA){
+        drama_tree->RemoveNode(movie_to_watch);
+        drama_tree->InsertNodeInGenre(new_movie);
+
+    }
+    else if(genre1==Genre::ACTION){
+        action_tree->RemoveNode(movie_to_watch);
+        action_tree->InsertNodeInGenre(new_movie);
+
+    }
+    else if (genre1==Genre::COMEDY){
+        comedy_tree->RemoveNode(movie_to_watch);
+        comedy_tree->InsertNodeInGenre(new_movie);
+
+    }
+    else if (genre1==Genre::FANTASY){
+        fantasy_tree->RemoveNode(movie_to_watch);
+        fantasy_tree->InsertNodeInGenre(new_movie);
+    }
+
     return StatusType::SUCCESS;
 }
 
 output_t<int> streaming_database::get_group_recommendation(int groupId)
 {
-	// TODO: Your code goes here
-    static int i = 0;
-    return (i++==0) ? 11 : 2;
+    if(groupId<=0){
+        return StatusType::INVALID_INPUT;
+    }
+
+    if(group_tree->FindNode(groupId)== nullptr){
+        return StatusType::FAILURE;
+    }//this group dosent exist
+
+    Node<group> *group_watch = group_tree->FindNode(groupId);
+    group group1=group_watch->GetElement();
+
+    if (group1->numberOfUser==0){
+        return StatusType::FAILURE;
+    }//no people in the group
+
+    Genre genre_to_watch= Genre::COMEDY;
+
+    if(group1->Ndrama > group1->Ncomedy){
+        genre_to_watch=Genre::DRAMA;
+    }
+    if((group1->Naction > group1->Ndrama) && (group1->Naction > group1->Ncomedy)){
+        genre_to_watch=Genre::ACTION;
+    }
+    if((group1->Nfantasy > group1->Naction ) && (group1->Nfantasy > group1->Ndrama) && (group1->Nfantasy > group1->Ncomedy)){
+        genre_to_watch= Genre::FANTASY;
+    }
+
+    if ((genre_to_watch==Genre::DRAMA && num_of_drama==0) ||(genre_to_watch==Genre::ACTION && num_of_action==0)
+    ||(genre_to_watch==Genre::COMEDY && num_of_comedy==0)||(genre_to_watch==Genre::FANTASY && num_of_fantasy==0)){
+        return StatusType::FAILURE;
+    }
+
+    movie movie_to_see= nullptr;
+
+    if (genre_to_watch==Genre::DRAMA){
+        movie_to_see=drama_tree->GetBiggestNode()->GetElement();
+    }
+    else if (genre_to_watch==Genre::ACTION){
+        movie_to_see=action_tree->GetBiggestNode()->GetElement();
+    }
+    else if (genre_to_watch==Genre::COMEDY){
+        movie_to_see=comedy_tree->GetBiggestNode()->GetElement();
+    }
+    else if (genre_to_watch==Genre::FANTASY){
+        movie_to_see=fantasy_tree->GetBiggestNode()->GetElement();
+    }
+
+    return movie_to_see->movieID;
+
+
+    //static int i = 0;
+    //return (i++==0) ? 11 : 2;
 }
+
 
 
