@@ -1,4 +1,6 @@
 #include "StreamingDBa1.h"
+#include "AvlTrees.h"
+
 
 
 struct movie_t{
@@ -305,11 +307,12 @@ StatusType streaming_database::remove_user(int userId)
         group1->Nfantasy -= user1->nfantasy;
         group1->Ndrama -= user1->ndrama;
 
-        group1->usergroup_tree->RemoveNode(userId);
+        Node<user> *Node_to_remove=group1->usergroup_tree->FindNode(userId);
+        group1->usergroup_tree->RemoveNode(Node_to_remove);
         group1->numberOfUser--;
 
     }
-    user_tree->RemoveNode(userId);
+    user_tree->RemoveNode(user_to_remove);
 
 	return StatusType::SUCCESS;
 }
@@ -356,19 +359,19 @@ StatusType streaming_database::add_group(int groupId)
 	return StatusType::SUCCESS;
 }
 
-void passingOnTheTree(Node<user> *node, group group1) {
-    if ( node == nullptr) {
-        return;
-    }
-    passingOnTheTree(node->GetNodeLeft());
-    passingOnTheTree(node->GetNodeRight());
-    node->GetElement()->group= nullptr;
-    user user1=node->GetElement();
+void passingOnTheTree(Node<user> *biggest_node, group group1) {
+    Node<user> *node_to_move=biggest_node;
+    while (node_to_move != nullptr) {
+        node_to_move->GetElement()->group= nullptr;
+        user user1=node_to_move->GetElement();
 
-    user1->naction += group1->WTaction;
-    user1->ncomedy += group1->WTcomedy;
-    user1->nfantasy += group1->WTfantasy;
-    user1->ndrama += group1->WTdrama;
+        user1->naction += group1->WTaction;
+        user1->ncomedy += group1->WTcomedy;
+        user1->nfantasy += group1->WTfantasy;
+        user1->ndrama += group1->WTdrama;
+        node_to_move= group1->usergroup_tree->FindPreviousNode(node_to_move);
+    }
+
 }
 
 StatusType streaming_database::remove_group(int groupId)
@@ -386,10 +389,10 @@ StatusType streaming_database::remove_group(int groupId)
     group group1=group_to_remove->GetElement();
 
     //fix group pointer and ngenre in user
-    passingOnTheTree(group1->usergroup_tree->GetRoot(),group1);
+    passingOnTheTree(group1->usergroup_tree->GetBiggestNode(),group1);
 
     group1->usergroup_tree->AuxDistructorTree( group1->usergroup_tree->GetRoot());
-    group_tree->RemoveNode(groupId);
+    group_tree->RemoveNode(group_to_remove);
 
 
 	return StatusType::SUCCESS;

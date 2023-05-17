@@ -88,7 +88,7 @@ public:
 
     void Check_And_Fix_BF(Node<T>* check);
 
-    AVLResults RemoveNode(int key);
+   // AVLResults RemoveNode(int key);
 
     AVLResults RemoveNode(int key, int PlayerID);
 
@@ -286,6 +286,12 @@ void Avl_tree<T>::SetRoot( Node<T>* new_root)
     this->root = new_root;
 }
 
+template <class T>
+Node<T>* Avl_tree<T>::GetRoot()
+{
+    return this->root;
+}
+
 template<class T>
 Node<T>* Avl_tree<T>::GetBiggestNode() const{
     return this->biggest_node;
@@ -304,7 +310,9 @@ Node<T>* Avl_tree<T>::FindPreviousNode(Node<T>* node) const{
         return node;
     }
     while(node->GetFatherNode()->GetNodeLeft()== node && node->GetFatherNode()!=nullptr) node = node->GetFatherNode();
-    if((node->GetFatherNode()=nullptr)) return nullptr; // which means we arrived at the root and node is the minimum of the tree
+    if((node->GetFatherNode()==nullptr)) {// which means we arrived at the root and node is the minimum of the tree
+        return nullptr;
+    }
     else return node->GetFatherNode();
 }
 
@@ -657,7 +665,11 @@ AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
         this->Swap(node_to_remove,node_to_swap);
         return this->RemoveNode(node_to_remove);
     }
+
+    return AVL_SUCCESS;
 }
+
+
 template<class T>
 void Avl_tree<T>::ReverseInorder(int* array, int size){
     int i=0;
@@ -686,9 +698,9 @@ Node<T>* max(Node<T>* node1, Node<T>* node2, Node<T>* node3, Node<T>* node4){
 }
 
 template <class T>
-void ReverseInOrderOfNone(int* array, int size, Avl_tree<T*> *tree1, Avl_tree<T*> *tree2, Avl_tree<T*> *tree3, Avl_tree<T*> *tree4){
+void ReverseInOrderOfNone(int* array, int size, Avl_tree<T> *tree1, Avl_tree<T> *tree2, Avl_tree<T> *tree3, Avl_tree<T> *tree4){
     int i = 0;
-    Node<T>*  max_node, node1= tree1->GetBiggestNode(), node2 = tree2->GetBiggestNode(), node3= tree3->GetBiggestNode(), node4 = tree4->GetBiggestNode();
+    Node<T>  *max_node, *node1= tree1->GetBiggestNode(), *node2 = tree2->GetBiggestNode(), *node3= tree3->GetBiggestNode(), *node4 = tree4->GetBiggestNode();
     while( i < size){
         max_node= max(node1,node2,node3,node4);
         array[i] = max_node->GetKey();
