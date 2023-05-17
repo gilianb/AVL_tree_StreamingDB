@@ -45,12 +45,16 @@ streaming_database::streaming_database()
 {
     try {
         movie_tree = new Avl_tree<movie>;
+        movie_tree->SetRoot(nullptr);
+        movie_tree->SetBiggestNode(nullptr);
     }
     catch (std::bad_alloc &) {
         throw ;
     }
     try {
         user_tree = new Avl_tree<user>;
+        user_tree->SetRoot(nullptr);
+        user_tree->SetBiggestNode(nullptr);
     }
     catch (std::bad_alloc &) {
         delete movie_tree;
@@ -58,6 +62,8 @@ streaming_database::streaming_database()
     }
     try {
         group_tree = new Avl_tree<group>;
+        group_tree->SetRoot(nullptr);
+        group_tree->SetBiggestNode(nullptr);
     }
     catch (std::bad_alloc &) {
         delete user_tree;
@@ -66,6 +72,8 @@ streaming_database::streaming_database()
     }
     try {
         action_tree = new Avl_tree<movie>;
+        action_tree->SetRoot(nullptr);
+        action_tree->SetBiggestNode(nullptr);
     }
     catch (std::bad_alloc &) {
         delete user_tree;
@@ -75,6 +83,8 @@ streaming_database::streaming_database()
     }
     try {
         fantasy_tree = new Avl_tree<movie>;
+        fantasy_tree->SetRoot(nullptr);
+        fantasy_tree->SetBiggestNode(nullptr);
     }
     catch (std::bad_alloc &) {
         delete user_tree;
@@ -85,6 +95,8 @@ streaming_database::streaming_database()
     }
     try {
         drama_tree = new Avl_tree<movie>;
+        drama_tree->SetRoot(nullptr);
+        drama_tree->SetBiggestNode(nullptr);
     }
     catch (std::bad_alloc &) {
         delete user_tree;
@@ -96,6 +108,8 @@ streaming_database::streaming_database()
     }
     try {
         comedy_tree = new Avl_tree<movie>;
+        comedy_tree->SetRoot(nullptr);
+        comedy_tree->SetBiggestNode(nullptr);
     }
     catch (std::bad_alloc &) {
         delete user_tree;
@@ -336,7 +350,11 @@ StatusType streaming_database::add_group(int groupId)
     }
 
     new_group-> groupID=groupId;
+    //TODO: try et catch
     new_group-> usergroup_tree=new Avl_tree<user>;
+    new_group->usergroup_tree->SetRoot(nullptr);
+    new_group->usergroup_tree->SetBiggestNode(nullptr);
+
 
     Node<group> *group_to_add = nullptr;
     try {

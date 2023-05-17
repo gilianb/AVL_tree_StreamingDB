@@ -303,15 +303,22 @@ void Avl_tree<T>::SetBiggestNode(Node<T>* new_biggest) {
 
 template <class T>
 Node<T>* Avl_tree<T>::FindPreviousNode(Node<T>* node) const{
-    if(node->GetNodeLeft()!=nullptr && node->GetNodeLeft()->GetNodeRight()==nullptr) return node->GetNodeLeft();
-    if(node->GetNodeLeft()!=nullptr && node->GetNodeLeft()->GetNodeRight()!=nullptr){
-        node = node->GetNodeLeft()->GetNodeRight();
-        while(node->GetNodeRight()!=nullptr) node = node ->GetNodeRight();
-        return node;
+    if(node->GetNodeLeft()!=nullptr && node->GetNodeLeft()->GetNodeRight()==nullptr){
+        return node->GetNodeLeft();
     }
+    if(node->GetNodeLeft()!= nullptr) {
+        if (node->GetNodeLeft()->GetNodeRight() != nullptr) {
+            node = node->GetNodeLeft()->GetNodeRight();
+            while (node->GetNodeRight() != nullptr) {
+                node = node->GetNodeRight();
+            }
+            return node;
+        }
+
     while(node->GetFatherNode()->GetNodeLeft()== node && node->GetFatherNode()!=nullptr) node = node->GetFatherNode();
     if((node->GetFatherNode()==nullptr)) {// which means we arrived at the root and node is the minimum of the tree
         return nullptr;
+    }
     }
     else return node->GetFatherNode();
 }
@@ -327,11 +334,15 @@ Node<T>* Avl_tree<T>::FindNode(int key_to_find) const{
     while (key_to_find!=current_key && node_to_return != nullptr){
         if(key_to_find < current_key){
             node_to_return=node_to_return->GetNodeLeft();
-            current_key=node_to_return->GetKey();
+            if(node_to_return != nullptr) {
+                current_key = node_to_return->GetKey();
+            }
         }
         else {
             node_to_return=node_to_return->GetNodeRight();
-            current_key=node_to_return->GetKey();
+            if(node_to_return != nullptr) {
+                current_key = node_to_return->GetKey();
+            }
         }
     }
     return node_to_return;
@@ -343,7 +354,8 @@ Node<T>* Avl_tree<T>::FindNodeInGenre(int key, double grade, int views){
         return nullptr;
     }
     Node<T>* node_to_return = root;
-    while (key != node_to_return->GetKey() && node_to_return != nullptr){
+
+    while (( node_to_return != nullptr ) && (key != node_to_return->GetKey())){
         if(grade > node_to_return->GetKeyGrade() || (grade == node_to_return->GetKeyGrade() && views > node_to_return->GetKeyView()) ||
            (grade == node_to_return->GetKeyGrade() && views == node_to_return->GetKeyView() && key < node_to_return->GetKey())){
             node_to_return = node_to_return->GetNodeRight();
@@ -615,7 +627,7 @@ AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
     if (node_to_remove== nullptr)
         return AVL_NODE_NO_EXIST;
     //if it s a leaf or the root alone
-    if (node_to_remove->GetNodeRight()== nullptr && node_to_remove->GetNodeLeft()== nullptr){
+    if ((node_to_remove->GetNodeRight()== nullptr) && (node_to_remove->GetNodeLeft()== nullptr)){
         if(node_to_remove==root){
             root = nullptr;
             this->SetBiggestNode(nullptr);
@@ -628,7 +640,9 @@ AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
                 node_to_remove->GetFatherNode()->SetNodeLeft(nullptr);
             }
             this->Check_And_Fix_BF(node_to_remove->GetFatherNode());
-            if(node_to_remove== this->GetBiggestNode()) this->SetBiggestNode(node_to_remove->GetFatherNode());
+            if(node_to_remove== this->GetBiggestNode()) {
+                this->SetBiggestNode(node_to_remove->GetFatherNode());
+            }
         }
     }
     else if (node_to_remove->GetNodeRight()== nullptr || node_to_remove->GetNodeLeft()== nullptr){
