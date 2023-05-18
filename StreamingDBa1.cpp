@@ -164,8 +164,8 @@ StatusType streaming_database::add_movie(int movieId, Genre genre, int views, bo
     movie_to_add->views=views;
     movie_to_add->vipOnly=vipOnly;
 
+    //node to be in ets movie
     Node<movie> *new_movie = nullptr;
-
     try {
         new_movie = new Node<movie>;
     }
@@ -173,31 +173,52 @@ StatusType streaming_database::add_movie(int movieId, Genre genre, int views, bo
         delete movie_to_add;
         return StatusType::ALLOCATION_ERROR;
     }
-
     new_movie->SetKey(movieId);
-    // new_movie->SetKeygrade(grade1);
-    // new_movie->SetKeyView(view1);
+    new_movie->SetKeyGrade(0);
+    new_movie->SetKeyView(movie_to_add->views);
     new_movie->SetElement(movie_to_add);
     new_movie->SetHeight(0);
     new_movie->SetFatherNode(nullptr);
     new_movie->SetNodeLeft(nullptr);
     new_movie->SetNodeRight(nullptr);
 
+    //insert the node in the movie tree
     movie_tree->InsertNode(new_movie);
+
+    //node to be in ets genre
+    Node<movie> *new_movie_in_genre = nullptr;
+    try {
+        new_movie_in_genre = new Node<movie>;
+    }
+    catch (std::bad_alloc &) {
+        delete movie_to_add;
+        delete new_movie;
+        return StatusType::ALLOCATION_ERROR;
+    }
+    new_movie_in_genre->SetKey(movieId);
+    new_movie_in_genre->SetKeyGrade(0);
+    new_movie_in_genre->SetKeyView(movie_to_add->views);
+    new_movie_in_genre->SetElement(movie_to_add);
+    new_movie_in_genre->SetHeight(0);
+    new_movie_in_genre->SetFatherNode(nullptr);
+    new_movie_in_genre->SetNodeLeft(nullptr);
+    new_movie_in_genre->SetNodeRight(nullptr);
+
+    //insert the node in the genre tree
     if (genre==Genre::DRAMA){
-        drama_tree->InsertNodeInGenre(new_movie);
+        drama_tree->InsertNodeInGenre(new_movie_in_genre);
         num_of_drama++;
     }
     else if(genre==Genre::ACTION){
-        action_tree->InsertNodeInGenre(new_movie);
+        action_tree->InsertNodeInGenre(new_movie_in_genre);
         num_of_action++;
     }
     else if (genre==Genre::COMEDY){
-        comedy_tree->InsertNodeInGenre(new_movie);
+        comedy_tree->InsertNodeInGenre(new_movie_in_genre);
         num_of_comedy++;
     }
     else if (genre==Genre::FANTASY){
-        fantasy_tree->InsertNodeInGenre(new_movie);
+        fantasy_tree->InsertNodeInGenre(new_movie_in_genre);
         num_of_fantasy++;
     }
 
@@ -432,8 +453,24 @@ StatusType streaming_database::add_user_to_group(int userId, int groupId)
         return StatusType::FAILURE;
     }//this user dosent exist
 
-    Node<user> *user_to_add = user_tree->FindNode(userId);
-    user user1=user_to_add->GetElement();
+    Node<user> *tmp_user = user_tree->FindNode(userId);
+    user user1=tmp_user->GetElement();
+
+    // create a new node with a pointer on an element that already exist to insert in the group
+    Node<user> *user_to_add_in_group = nullptr;
+    try {
+        user_to_add_in_group= new Node<user>;
+    }
+    catch (std::bad_alloc &) {
+        return StatusType::ALLOCATION_ERROR;
+    }
+    user_to_add_in_group->SetKey(userId);
+    user_to_add_in_group->SetElement(user1);
+    user_to_add_in_group->SetHeight(0);
+    user_to_add_in_group->SetFatherNode(nullptr);
+    user_to_add_in_group->SetNodeLeft(nullptr);
+    user_to_add_in_group->SetNodeRight(nullptr);
+
 
     if(user1->group!= nullptr){
         return StatusType::FAILURE;
@@ -442,7 +479,7 @@ StatusType streaming_database::add_user_to_group(int userId, int groupId)
     Node<group> *group_to_add_in = group_tree->FindNode(groupId);
     group group1=group_to_add_in->GetElement();
 
-    group1->usergroup_tree->InsertNode(user_to_add);
+    group1->usergroup_tree->InsertNode(user_to_add_in_group);
     if (user1->vip && !group1->vip){
         group1->vip=true;
     }
@@ -463,6 +500,7 @@ StatusType streaming_database::add_user_to_group(int userId, int groupId)
 
     return StatusType::SUCCESS;
 }
+
 
 StatusType streaming_database::user_watch(int userId, int movieId)
 {
@@ -493,19 +531,27 @@ StatusType streaming_database::user_watch(int userId, int movieId)
 
     if (genre_of_the_film==Genre::DRAMA){
         user1->ndrama++;
-        group1->Ndrama++;
+        if(group1 != nullptr) {
+            group1->Ndrama++;
+        }
     }
     else if(genre_of_the_film==Genre::ACTION){
         user1->naction++;
-        group1->Naction++;
+        if(group1 != nullptr) {
+            group1->Naction++;
+        }
     }
     else if (genre_of_the_film==Genre::COMEDY){
         user1->ncomedy++;
-        group1->Ncomedy++;
+        if(group1 != nullptr) {
+            group1->Ncomedy++;
+        }
     }
     else if (genre_of_the_film==Genre::FANTASY){
         user1->nfantasy++;
-        group1->Nfantasy++;
+        if(group1 != nullptr) {
+            group1->Nfantasy++;
+        }
     }
 
     //update the ets genre with the change of view
