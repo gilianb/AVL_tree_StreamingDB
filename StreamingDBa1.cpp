@@ -130,6 +130,7 @@ streaming_database::streaming_database()
 streaming_database::~streaming_database()
 {
     //aux destructor pour tout le monde
+    //TODO: detruire aussi les elemnts et les tat arbres
     delete user_tree;
     delete movie_tree;
     delete group_tree;
@@ -593,6 +594,9 @@ StatusType streaming_database::user_watch(int userId, int movieId)
     new_movie->SetNodeLeft(nullptr);
     new_movie->SetNodeRight(nullptr);
 
+    movie_to_watch->SetElement(nullptr);//TODO: check if the element is not delete
+
+
     if (genre1==Genre::DRAMA){
         drama_tree->RemoveNode(movie_to_watch);
         drama_tree->InsertNodeInGenre(new_movie);
@@ -707,10 +711,12 @@ StatusType streaming_database::group_watch(int groupId,int movieId)
     new_movie->SetNodeLeft(nullptr);
     new_movie->SetNodeRight(nullptr);
 
+
+    movie_to_watch->SetElement(nullptr);//TODO: check if the element is not delete
+
     if (genre1==Genre::DRAMA){
         drama_tree->RemoveNode(movie_to_watch);
         drama_tree->InsertNodeInGenre(new_movie);
-
     }
     else if(genre1==Genre::ACTION){
         action_tree->RemoveNode(movie_to_watch);
@@ -803,35 +809,50 @@ StatusType streaming_database::get_all_movies(Genre genre, int *const output)
 
 
 
-output_t<int> streaming_database::get_num_views(int userId, Genre genre)
-{
-    if(userId<=0){
+output_t<int> streaming_database::get_num_views(int userId, Genre genre) {
+    if (userId <= 0) {
         return StatusType::INVALID_INPUT;
     }
 
-    if(user_tree->FindNode(userId)== nullptr){
+    if (user_tree->FindNode(userId) == nullptr) {
         return StatusType::FAILURE;
     }//this user dosent exist
 
     Node<user> *user_to_add = user_tree->FindNode(userId);
-    user user1=user_to_add->GetElement();
+    user user1 = user_to_add->GetElement();
 
-    group group1=user1->group;
-    int num_of_view=0;
+    group group1 = user1->group;
+    int num_of_view = 0;
 
-    if (genre == Genre::DRAMA) {
-        num_of_view= (user1->ndrama) + (group1->WTdrama);
-    } else if (genre == Genre::ACTION) {
-        num_of_view= (user1->naction) + (group1->WTaction);
+    if (group1 != nullptr) {
+        if (genre == Genre::DRAMA) {
+            num_of_view = (user1->ndrama) + (group1->WTdrama);
+        } else if (genre == Genre::ACTION) {
+            num_of_view = (user1->naction) + (group1->WTaction);
 
-    } else if (genre == Genre::COMEDY) {
-        num_of_view= (user1->ncomedy) + (group1->WTcomedy);
+        } else if (genre == Genre::COMEDY) {
+            num_of_view = (user1->ncomedy) + (group1->WTcomedy);
 
-    } else if (genre == Genre::FANTASY) {
-        num_of_view= (user1->nfantasy) + (group1->WTfantasy);
-    }else {
-        num_of_view= (user1->ndrama) + (group1->WTdrama) + (user1->naction) +(group1->WTaction)
-                + (user1->ncomedy) + (group1->WTcomedy) +(user1->nfantasy) + (group1->WTfantasy);
+        } else if (genre == Genre::FANTASY) {
+            num_of_view = (user1->nfantasy) + (group1->WTfantasy);
+        } else {
+            num_of_view = (user1->ndrama) + (group1->WTdrama) + (user1->naction) + (group1->WTaction)
+                          + (user1->ncomedy) + (group1->WTcomedy) + (user1->nfantasy) + (group1->WTfantasy);
+        }
+    }else{
+        if (genre == Genre::DRAMA) {
+            num_of_view = user1->ndrama;
+        } else if (genre == Genre::ACTION) {
+            num_of_view = user1->naction;
+
+        } else if (genre == Genre::COMEDY) {
+            num_of_view = user1->ncomedy;
+
+        } else if (genre == Genre::FANTASY) {
+            num_of_view = user1->nfantasy;
+        } else {
+            num_of_view = (user1->ndrama) + (user1->naction)+ (user1->ncomedy) + (user1->nfantasy) ;
+        }
     }
 
 	return num_of_view;
@@ -902,6 +923,8 @@ StatusType streaming_database::rate_movie(int userId, int movieId, int rating)
     new_movie->SetNodeLeft(nullptr);
     new_movie->SetNodeRight(nullptr);
 
+    movie_to_watch->SetElement(nullptr);//TODO: check if the element is not delete
+
     if (genre1==Genre::DRAMA){
         drama_tree->RemoveNode(movie_to_watch);
         drama_tree->InsertNodeInGenre(new_movie);
@@ -924,6 +947,8 @@ StatusType streaming_database::rate_movie(int userId, int movieId, int rating)
 
     return StatusType::SUCCESS;
 }
+
+
 
 output_t<int> streaming_database::get_group_recommendation(int groupId)
 {

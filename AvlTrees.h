@@ -277,9 +277,11 @@ void Avl_tree<T>::AuxDistructorTree( Node<T>* node){
     if(node == nullptr) return;
     AuxDistructorTree(node->GetNodeLeft());
     AuxDistructorTree(node->GetNodeRight());
+    node->SetElement(nullptr);
     delete node;
-
 }
+
+
 template <class T>
 void Avl_tree<T>::SetRoot( Node<T>* new_root)
 {
@@ -296,6 +298,7 @@ template<class T>
 Node<T>* Avl_tree<T>::GetBiggestNode() const{
     return this->biggest_node;
 }
+
 template<class T>
 void Avl_tree<T>::SetBiggestNode(Node<T>* new_biggest) {
     this->biggest_node = new_biggest;
