@@ -101,7 +101,7 @@ public:
 
     AVLResults Remove_Node_With_Only_Child (Node<T>* node);
 
-    void Swap(Node<T>* node_1, Node<T>* node_2);
+    void Swap(Node<T>* nodeA, Node<T>* nodeB);
 
     AVLResults RotateLL(Node<T>* B_node);
 
@@ -317,33 +317,6 @@ void Avl_tree<T>::SetBiggestNode(Node<T>* new_biggest) {
     this->biggest_node = new_biggest;
 }
 
-/*
-template <class T>
-Node<T>* Avl_tree<T>::FindPreviousNode(Node<T>* node) const{//TODO: why this dosnt get nullptr fonction to check
-    if(node->GetNodeLeft()!=nullptr && node->GetNodeLeft()->GetNodeRight()==nullptr){
-        return node->GetNodeLeft();
-    }
-    if(node->GetNodeLeft()!= nullptr) {
-        if (node->GetNodeLeft()->GetNodeRight() != nullptr) {
-            node = node->GetNodeLeft()->GetNodeRight();
-            while (node->GetNodeRight() != nullptr) {
-                node = node->GetNodeRight();
-            }
-            return node;
-        }
-        while(node->GetFatherNode()->GetNodeLeft()== node && node->GetFatherNode()!=nullptr) {
-            node = node->GetFatherNode();
-        }
-        if((node->GetFatherNode()==nullptr)) {// which means we arrived at the root and node is the minimum of the tree
-            return nullptr;
-        }
-    }
-    else {
-        return node->GetFatherNode();
-    }
-    return nullptr;
-}
- */
 
 template<class T>
 Node<T>* Avl_tree<T>::FindPreviousNode(Node<T>* node) const{//TODO: why this dosnt get nullptr fonction to check
@@ -521,331 +494,294 @@ AVLResults Avl_tree<T>::InsertNodeInGenre(Node<T>* node){
 
 /*
 template <class T>
-void Avl_tree<T>::Swap(Node<T>* node_1, Node<T>* node_2){
-    int temp_height = node_1->GetHeight();
-    Node<T>* temp_left_son = node_1->GetNodeLeft();
-    Node<T>* temp_right_son = node_1->GetNodeRight();
-    Node<T>* temp_father_node = node_1->GetFatherNode();
-    node_1->SetFatherNode(node_2->GetFatherNode());
-    node_1->SetNodeRight(node_2->GetNodeRight());
-    node_1->SetNodeLeft(node_2->GetNodeLeft());
-    node_1->SetHeight(node_2->GetHeight());
-    node_2->SetFatherNode(temp_father_node);
-    node_2->SetNodeRight(temp_right_son);
-    node_2->SetNodeLeft(temp_left_son);
-    node_2->SetHeight(temp_height);
-    Node<T>* father_node_1 = node_1->GetFatherNode();
-    Node<T>* father_node_2 = node_2->GetFatherNode();
-    if(father_node_1 == nullptr){
-        this->SetRoot(node_1);
+void Avl_tree<T>::Swap(Node<T>* nodeA, Node<T>* nodeB){
+    int temp_height = nodeA->GetHeight();
+    Node<T>* temp_left_son = nodeA->GetNodeLeft();
+    Node<T>* temp_right_son = nodeA->GetNodeRight();
+    Node<T>* temp_father_node = nodeA->GetFatherNode();
+    nodeA->SetFatherNode(nodeB->GetFatherNode());
+    nodeA->SetNodeRight(nodeB->GetNodeRight());
+    nodeA->SetNodeLeft(nodeB->GetNodeLeft());
+    nodeA->SetHeight(nodeB->GetHeight());
+    nodeB->SetFatherNode(temp_father_node);
+    nodeB->SetNodeRight(temp_right_son);
+    nodeB->SetNodeLeft(temp_left_son);
+    nodeB->SetHeight(temp_height);
+    Node<T>* father_nodeA = nodeA->GetFatherNode();
+    Node<T>* father_nodeB = nodeB->GetFatherNode();
+    if(father_nodeA == nullptr){
+        this->SetRoot(nodeA);
     }
     else{
-        if(father_node_1->GetNodeRight() == node_2){
-            father_node_1->SetNodeRight(node_1);
+        if(father_nodeA->GetNodeRight() == nodeB){
+            father_nodeA->SetNodeRight(nodeA);
         }
-        else father_node_1->SetNodeLeft(node_1);
+        else father_nodeA->SetNodeLeft(nodeA);
     }
-    if(father_node_2 == nullptr){
-        this->SetRoot(node_2);
+    if(father_nodeB == nullptr){
+        this->SetRoot(nodeB);
     }
     else{
-        if(father_node_2->GetNodeRight() == node_1){
-            father_node_2->SetNodeRight(node_2);
+        if(father_nodeB->GetNodeRight() == nodeA){
+            father_nodeB->SetNodeRight(nodeB);
         }
-        else father_node_2->SetNodeLeft(node_2);
+        else father_nodeB->SetNodeLeft(nodeB);
     }
-    Node<T>* right_son_1 = node_1->GetNodeRight();
+    Node<T>* right_son_1 = nodeA->GetNodeRight();
     if(right_son_1 != nullptr){
-        right_son_1->SetFatherNode(node_1);
+        right_son_1->SetFatherNode(nodeA);
     }
-    Node<T>* left_son_1= node_1->GetNodeLeft();
+    Node<T>* left_son_1= nodeA->GetNodeLeft();
     if(left_son_1 != nullptr){
-        left_son_1->SetFatherNode(node_1);
+        left_son_1->SetFatherNode(nodeA);
     }
-    Node<T>* right_son_2 = node_2->GetNodeRight();
+    Node<T>* right_son_2 = nodeB->GetNodeRight();
     if(right_son_2 != nullptr){
-        right_son_2->SetFatherNode(node_2);
+        right_son_2->SetFatherNode(nodeB);
     }
-    Node<T>* left_son_2= node_2->GetNodeLeft();
+    Node<T>* left_son_2= nodeB->GetNodeLeft();
     if(left_son_2 != nullptr){
-        left_son_2->SetFatherNode(node_2);
+        left_son_2->SetFatherNode(nodeB);
     }
 }
 
  */
 template <class T>
-void Avl_tree<T>::Swap(Node<T>* node_1, Node<T>* node_2) {
+void Avl_tree<T>::Swap(Node<T>* nodeA, Node<T>* nodeB) {
 
-    bool node2_is_left_son= (node_1->GetNodeLeft()==node_2);
-    bool node2_is_right_son= (node_1->GetNodeRight()==node_2);
-    bool node1_is_left_son= (node_2->GetNodeLeft()==node_1);
-    bool node1_is_right_son= (node_2->GetNodeRight()==node_1);
+    bool node2_is_left_son= (nodeA->GetNodeLeft()==nodeB);
+    bool node2_is_right_son= (nodeA->GetNodeRight()==nodeB);
+    bool node1_is_left_son= (nodeB->GetNodeLeft()==nodeA);
+    bool node1_is_right_son= (nodeB->GetNodeRight()==nodeA);
 
     //keep the pointers in the Node
-    Node<T>* father_1= node_1->GetFatherNode();
-    Node<T>* son_right_1= node_1->GetNodeRight();
-    Node<T>* son_left_1= node_1->GetNodeLeft();
+    Node<T>* FatherA= nodeA->GetFatherNode();
+    Node<T>* SonRightA= nodeA->GetNodeRight();
+    Node<T>* SonLeftA= nodeA->GetNodeLeft();
 
-    Node<T>* father_2=node_2->GetFatherNode();
-    Node<T>* son_right_2= node_2->GetNodeRight();
-    Node<T>* son_left_2= node_2->GetNodeLeft();
+    Node<T>* fatherB=nodeB->GetFatherNode();
+    Node<T>* SonRightB= nodeB->GetNodeRight();
+    Node<T>* SonLeftB= nodeB->GetNodeLeft();
 
     //swap the pointers
     if(node2_is_left_son) {
-        node_1->SetFatherNode(node_2);
-        node_2->SetNodeLeft(node_1);
-        node_1->SetNodeLeft(son_left_2);
-        node_1->SetNodeRight(son_right_2);
-        node_2->SetFatherNode(father_1);
-        node_2->SetNodeRight(son_right_1);
+        nodeA->SetFatherNode(nodeB);
+        nodeB->SetNodeLeft(nodeA);
+        nodeA->SetNodeLeft(SonLeftB);
+        nodeA->SetNodeRight(SonRightB);
+        nodeB->SetFatherNode(FatherA);
+        nodeB->SetNodeRight(SonRightA);
 
-        if(node_1->GetNodeLeft() != nullptr)
-        {
-            node_1->GetNodeLeft()->SetFatherNode(node_1);
+        if(nodeA->GetNodeLeft() != nullptr){
+            nodeA->GetNodeLeft()->SetFatherNode(nodeA);
         }
-        if(node_1->GetNodeRight() != nullptr)
-        {
-            node_1->GetNodeRight()->SetFatherNode(node_1);
+        if(nodeA->GetNodeRight() != nullptr){
+            nodeA->GetNodeRight()->SetFatherNode(nodeA);
         }
-        if(node_2->GetNodeRight() != nullptr)
-        {
-            node_2->GetNodeRight()->SetFatherNode(node_2);
+        if(nodeB->GetNodeRight() != nullptr){
+            nodeB->GetNodeRight()->SetFatherNode(nodeB);
         }
 
-        if(node_2->GetFatherNode() != nullptr)
-        {
-            if(node_2->GetFatherNode()->GetNodeLeft() == node_1)
-            {
-                node_2->GetFatherNode()->SetNodeLeft(node_2);
+        if(nodeB->GetFatherNode() != nullptr){
+            if(nodeB->GetFatherNode()->GetNodeLeft() == nodeA){
+                nodeB->GetFatherNode()->SetNodeLeft(nodeB);
             }
-            else if(node_2->GetFatherNode()->GetNodeRight() == node_1)
-            {
-                node_2->GetFatherNode()->SetNodeRight(node_2);
+            else if(nodeB->GetFatherNode()->GetNodeRight() == nodeA){
+                nodeB->GetFatherNode()->SetNodeRight(nodeB);
             }
         }
-        if(node_2->GetFatherNode() == nullptr)
-        {
-            this->root = node_2;
+        if(nodeB->GetFatherNode() == nullptr){
+            this->root = nodeB;
         }
     }
 
-    else if(node2_is_right_son)
-    {
-        node_1->SetFatherNode(node_2);
-        node_2->SetNodeRight(node_1);
-        node_1->SetNodeLeft(son_left_2);
-        node_1->SetNodeRight(son_right_2);
-        node_2->SetFatherNode(father_1);
-        node_2->SetNodeLeft(son_left_1);
+    else if(node2_is_right_son){
+        nodeA->SetFatherNode(nodeB);
+        nodeB->SetNodeRight(nodeA);
+        nodeA->SetNodeLeft(SonLeftB);
+        nodeA->SetNodeRight(SonRightB);
+        nodeB->SetFatherNode(FatherA);
+        nodeB->SetNodeLeft(SonLeftA);
 
-        if(node_1->GetNodeLeft() != nullptr)
-        {
-            node_1->GetNodeLeft()->SetFatherNode(node_1);
+        if(nodeA->GetNodeLeft() != nullptr){
+            nodeA->GetNodeLeft()->SetFatherNode(nodeA);
         }
-        if(node_1->GetNodeRight() != nullptr)
-        {
-            node_1->GetNodeRight()->SetFatherNode(node_1);
+        if(nodeA->GetNodeRight() != nullptr){
+            nodeA->GetNodeRight()->SetFatherNode(nodeA);
         }
-        if(node_2->GetNodeLeft() != nullptr)
-        {
-            node_2->GetNodeLeft()->SetFatherNode(node_2);
+        if(nodeB->GetNodeLeft() != nullptr){
+            nodeB->GetNodeLeft()->SetFatherNode(nodeB);
         }
 
-        if(node_2->GetFatherNode() != nullptr)
-        {
-            if(node_2->GetFatherNode()->GetNodeLeft() == node_1)
-            {
-                node_2->GetFatherNode()->SetNodeLeft(node_2);
+        if(nodeB->GetFatherNode() != nullptr){
+            if(nodeB->GetFatherNode()->GetNodeLeft() == nodeA){
+                nodeB->GetFatherNode()->SetNodeLeft(nodeB);
             }
-            else if(node_2->GetFatherNode()->GetNodeRight() == node_1)
-            {
-                node_2->GetFatherNode()->SetNodeRight(node_2);
+            else if(nodeB->GetFatherNode()->GetNodeRight() == nodeA){
+                nodeB->GetFatherNode()->SetNodeRight(nodeB);
             }
         }
-        if(node_2->GetFatherNode() == nullptr)
-        {
-            this->root = node_2;
+        if(nodeB->GetFatherNode() == nullptr){
+            this->root = nodeB;
         }
     }
 
-    else if(node1_is_left_son)
-    {
-        node_2->SetFatherNode(node_1);
-        node_1->SetNodeLeft(node_2);
-        node_2->SetNodeLeft(son_left_1);
-        node_2->SetNodeRight(son_right_1);
-        node_1->SetFatherNode(father_2);
-        node_1->SetNodeRight(son_right_2);
+    else if(node1_is_left_son){
+        nodeB->SetFatherNode(nodeA);
+        nodeA->SetNodeLeft(nodeB);
+        nodeB->SetNodeLeft(SonLeftA);
+        nodeB->SetNodeRight(SonRightA);
+        nodeA->SetFatherNode(fatherB);
+        nodeA->SetNodeRight(SonRightB);
 
-        if(node_2->GetNodeLeft() != nullptr)
-        {
-            node_2->GetNodeLeft()->SetFatherNode(node_2);
+        if(nodeB->GetNodeLeft() != nullptr){
+            nodeB->GetNodeLeft()->SetFatherNode(nodeB);
         }
-        if(node_2->GetNodeRight() != nullptr)
-        {
-            node_2->GetNodeRight()->SetFatherNode(node_2);
+        if(nodeB->GetNodeRight() != nullptr){
+            nodeB->GetNodeRight()->SetFatherNode(nodeB);
         }
-        if(node_1->GetNodeRight() != nullptr)
-        {
-            node_1->GetNodeRight()->SetFatherNode(node_1);
+        if(nodeA->GetNodeRight() != nullptr){
+            nodeA->GetNodeRight()->SetFatherNode(nodeA);
         }
 
-        if(node_1->GetFatherNode() != nullptr)
-        {
-            if(node_1->GetFatherNode()->GetNodeLeft() == node_2)
-            {
-                node_1->GetFatherNode()->SetNodeLeft(node_1);
+        if(nodeA->GetFatherNode() != nullptr){
+            if(nodeA->GetFatherNode()->GetNodeLeft() == nodeB){
+                nodeA->GetFatherNode()->SetNodeLeft(nodeA);
             }
-            else if(node_1->GetFatherNode()->GetNodeRight() == node_2)
-            {
-                node_1->GetFatherNode()->SetNodeRight(node_1);
+            else if(nodeA->GetFatherNode()->GetNodeRight() == nodeB){
+                nodeA->GetFatherNode()->SetNodeRight(nodeA);
             }
         }
-        if(node_1->GetFatherNode() == nullptr)
-        {
-            this->root = node_1;
+        if(nodeA->GetFatherNode() == nullptr){
+            this->root = nodeA;
         }
     }
 
-    else if(node1_is_right_son)
-    {
-        node_2->SetFatherNode(node_1);
-        node_1->SetNodeRight(node_2);
-        node_2->SetNodeLeft(son_left_1);
-        node_2->SetNodeRight(son_right_1);
-        node_1->SetFatherNode(father_2);
-        node_1->SetNodeLeft(son_left_2);
+    else if(node1_is_right_son){
+        nodeB->SetFatherNode(nodeA);
+        nodeA->SetNodeRight(nodeB);
+        nodeB->SetNodeLeft(SonLeftA);
+        nodeB->SetNodeRight(SonRightA);
+        nodeA->SetFatherNode(fatherB);
+        nodeA->SetNodeLeft(SonLeftB);
 
-        if(node_2->GetNodeLeft() != nullptr)
-        {
-            node_2->GetNodeLeft()->SetFatherNode(node_2);
+        if(nodeB->GetNodeLeft() != nullptr){
+            nodeB->GetNodeLeft()->SetFatherNode(nodeB);
         }
-        if(node_2->GetNodeRight() != nullptr)
-        {
-            node_2->GetNodeRight()->SetFatherNode(node_2);
+        if(nodeB->GetNodeRight() != nullptr){
+            nodeB->GetNodeRight()->SetFatherNode(nodeB);
         }
-        if(node_1->GetNodeLeft() != nullptr)
-        {
-            node_1->GetNodeLeft()->SetFatherNode(node_1);
+        if(nodeA->GetNodeLeft() != nullptr){
+            nodeA->GetNodeLeft()->SetFatherNode(nodeA);
         }
 
-        if(node_1->GetFatherNode() != nullptr)
-        {
-            if(node_1->GetFatherNode()->GetNodeLeft() == node_2)
-            {
-                node_1->GetFatherNode()->SetNodeLeft(node_1);
+        if(nodeA->GetFatherNode() != nullptr){
+            if(nodeA->GetFatherNode()->GetNodeLeft() == nodeB){
+                nodeA->GetFatherNode()->SetNodeLeft(nodeA);
             }
-            else if(node_1->GetFatherNode()->GetNodeRight() == node_2)
-            {
-                node_1->GetFatherNode()->SetNodeRight(node_1);
+            else if(nodeA->GetFatherNode()->GetNodeRight() == nodeB){
+                nodeA->GetFatherNode()->SetNodeRight(nodeA);
             }
         }
-        if(node_1->GetFatherNode() == nullptr)
-        {
-            this->root = node_1;
+        if(nodeA->GetFatherNode() == nullptr){
+            this->root = nodeA;
         }
     }
 
     else {
-        node_1->SetFatherNode(father_2);
-        node_1->SetNodeLeft(son_left_2);
-        node_1->SetNodeRight(son_right_2);
+        nodeA->SetFatherNode(fatherB);
+        nodeA->SetNodeLeft(SonLeftB);
+        nodeA->SetNodeRight(SonRightB);
 
 
-        node_2->SetFatherNode(father_1);
-        node_2->SetNodeLeft(son_left_1);
-        node_2->SetNodeRight(son_right_1);
+        nodeB->SetFatherNode(FatherA);
+        nodeB->SetNodeLeft(SonLeftA);
+        nodeB->SetNodeRight(SonRightA);
 
-        //*******update the pointers of the sons to them******
-        //the left son of node2
-        if(son_left_2!= nullptr && son_left_2!=node_1){ //there's a left son to node2 and it's not node1
-            node_1->GetNodeLeft()->SetFatherNode(node_1);
+        //update the pointers of the sons to them
+        //the left son of nodeB
+        if(SonLeftB!= nullptr && SonLeftB!=nodeA){
+            nodeA->GetNodeLeft()->SetFatherNode(nodeA);
         }
-        else if (node_1->GetNodeLeft()==node_1) //node1 is the left son of node2, we swap
-        {
-            node_1->SetNodeLeft(node_2);
-            node_2->SetFatherNode(node_1);
-        }
-
-        //the right son of node2
-        if(son_right_2!= nullptr && son_right_2!=node_1) { //there's a right son to node2 and it's not node1
-            node_1->GetNodeRight()->SetFatherNode(node_1);
-        }
-        else if (node_1->GetNodeRight()==node_1) //node1 is the right son of node2, we swap
-        {
-            node_1->SetNodeRight(node_2);
-            node_2->SetFatherNode(node_1);
+        else if (nodeA->GetNodeLeft()==nodeA){
+            nodeA->SetNodeLeft(nodeB);
+            nodeB->SetFatherNode(nodeA);
         }
 
-        //the left son of node1
-        if(son_left_1!= nullptr && son_left_1!=node_2) { //there's a left son to node1 and it's not node2
-            node_2->GetNodeLeft()->SetFatherNode(node_2);
+        //the right son of nodeB
+        if(SonRightB!= nullptr && SonRightB!=nodeA) {
+            nodeA->GetNodeRight()->SetFatherNode(nodeA);
         }
-        else if(node_2->GetNodeLeft()==node_2){  //node2 is the left son of node1, we swap
-            node_2->SetNodeLeft(node_1);
-            node_1->SetFatherNode(node_2);
+        else if (nodeA->GetNodeRight()==nodeA){
+            nodeA->SetNodeRight(nodeB);
+            nodeB->SetFatherNode(nodeA);
         }
 
-        //the right son of node1
-        if(son_right_1!= nullptr && son_right_1!=node_2) { //there's a right son to node1 and it's not node2
-            node_2->GetNodeRight()->SetFatherNode(node_2);
+        //the left son of nodeA
+        if(SonLeftA!= nullptr && SonLeftA!=nodeB) {
+            nodeB->GetNodeLeft()->SetFatherNode(nodeB);
         }
-        else if(node_2->GetNodeRight()==node_2){   //node2 is the right son of node1
-            node_2->SetNodeLeft(node_1);
-            node_1->SetFatherNode(node_2);
+        else if(nodeB->GetNodeLeft()==nodeB){
+            nodeB->SetNodeLeft(nodeA);
+            nodeA->SetFatherNode(nodeB);
+        }
+
+        //the right son of nodeA
+        if(SonRightA!= nullptr && SonRightA!=nodeB) {
+            nodeB->GetNodeRight()->SetFatherNode(nodeB);
+        }
+        else if(nodeB->GetNodeRight()==nodeB){
+            nodeB->SetNodeLeft(nodeA);
+            nodeA->SetFatherNode(nodeB);
         }
 
 
-        //*******Update the pointers of the fathers to them********
+        //Update the pointers of the fathers to them
         int father_swapped=0;
-        if(node_1->GetFatherNode()==node_2->GetFatherNode()){
-            if (node_1->GetFatherNode()->GetNodeLeft() == node_1) {
-                node_1->GetFatherNode()->SetNodeLeft(node_2);
-                node_1->GetFatherNode()->SetNodeRight(node_1);
+        if(nodeA->GetFatherNode()==nodeB->GetFatherNode()){
+            if (nodeA->GetFatherNode()->GetNodeLeft() == nodeA) {
+                nodeA->GetFatherNode()->SetNodeLeft(nodeB);
+                nodeA->GetFatherNode()->SetNodeRight(nodeA);
             }
             else {
-                node_1->GetFatherNode()->SetNodeRight(node_2);
-                node_1->GetFatherNode()->SetNodeLeft(node_1);
+                nodeA->GetFatherNode()->SetNodeRight(nodeB);
+                nodeA->GetFatherNode()->SetNodeLeft(nodeA);
             }
             father_swapped=1;
         }
 
-        bool node1_was_root=false;
-        if(this->root == node_1)                        //node1 had no father
-        {
-            this->root = node_2; //updating node2 as the root
-            node1_was_root = true;
+        bool nodeA_was_root=false;
+        if(this->root == nodeA){
+            this->root = nodeB;
+            nodeA_was_root = true;
         }
-
-        else if (father_swapped==0)  {                   //node1 had a father
-            if(node_2->GetFatherNode()->GetNodeLeft()==node_1){       //node1 was a left son
-                node_2->GetFatherNode()->SetNodeLeft(node_2);        // so now node2 becomes the left son
+            //nodeA had a father
+        else if (father_swapped==0)  {
+            if(nodeB->GetFatherNode()->GetNodeLeft()==nodeA){
+                nodeB->GetFatherNode()->SetNodeLeft(nodeB);
             }
-            if(node_2->GetFatherNode()->GetNodeRight()==node_1){      //node1 was a right son
-                node_2->GetFatherNode()->SetNodeRight(node_2);       // so now node2 becomes the right son
-            }
-        }
-
-        if(!node1_was_root && this->root == node_2)                        //node2 had no father
-        {
-            this->root = node_1;
-        }
-
-        else if (father_swapped==0){                    //node2 had a father
-            if(node_1->GetFatherNode()->GetNodeLeft()==node_2){       //node2 was a left son
-                node_1->GetFatherNode()->SetNodeLeft(node_1);        //now node1 becomes the left son
-            }
-            if(node_1->GetFatherNode()->GetNodeRight()==node_2){      //node2 was a right son
-                node_1->GetFatherNode()->SetNodeRight(node_1);       //so now node1 becomes the right son
+            if(nodeB->GetFatherNode()->GetNodeRight()==nodeA){
+                nodeB->GetFatherNode()->SetNodeRight(nodeB);
             }
         }
 
-        //Here the nodes are swapped and all the pointers point around point to the right Node
+        if(!nodeA_was_root && this->root == nodeB){
+            this->root = nodeA;
+        }
+
+        else if (father_swapped==0){
+            if(nodeA->GetFatherNode()->GetNodeLeft()==nodeB){
+                nodeA->GetFatherNode()->SetNodeLeft(nodeA);
+            }
+            if(nodeA->GetFatherNode()->GetNodeRight()==nodeB){
+                nodeA->GetFatherNode()->SetNodeRight(nodeA);
+            }
+        }
     }
 
-    node_1->SetNewHeight();
-    node_2->SetNewHeight();
-    node_1->SetNewHeight(); //in case the first time node2 was his son and wasnt updated
+    nodeA->SetNewHeight();
+    nodeB->SetNewHeight();
+    nodeA->SetNewHeight();
 }
 
 
@@ -877,94 +813,93 @@ AVLResults Avl_tree<T>::RotateLL(Node<T>* B_node){
 }
 
 template <class T>
-AVLResults Avl_tree<T>::RotateRR(Node<T>* B_node){
-    Node<T>* A_node = B_node->GetNodeRight();
-    Node<T>* A_node_left = A_node->GetNodeLeft();
+AVLResults Avl_tree<T>::RotateRR(Node<T>* B_node) {
+    Node<T> *A_node = B_node->GetNodeRight();
+    Node<T> *A_node_left = A_node->GetNodeLeft();
     A_node->SetFatherNode(B_node->GetFatherNode());
-    if(A_node->GetFatherNode() == nullptr){
+    if (A_node->GetFatherNode() == nullptr) {
         this->SetRoot(A_node);
-    }
-    else{
-        if(A_node->GetFatherNode()->GetNodeLeft()== B_node){
+    } else {
+        if (A_node->GetFatherNode()->GetNodeLeft() == B_node) {
             A_node->GetFatherNode()->SetNodeLeft(A_node);
-        }
-        else A_node->GetFatherNode()->SetNodeRight(A_node);
+        } else A_node->GetFatherNode()->SetNodeRight(A_node);
     }
     A_node->SetNodeLeft(B_node);
     B_node->SetFatherNode(A_node);
     B_node->SetNodeRight(A_node_left);
-    if(A_node_left != nullptr){
+    if (A_node_left != nullptr) {
         A_node_left->SetFatherNode(B_node);
     }
     A_node->SetNewHeight();
     B_node->SetNewHeight();
-    return AVL_SUCCESS;                                                                                                                                                                                                                                                                                                                                                                                                                       }
+    return AVL_SUCCESS;
+}
+
 
 template <class T>
-AVLResults Avl_tree<T>::RotateLR(Node<T>* C_node){
-    Node<T>* A_node = C_node->GetNodeLeft();
-    Node<T>* B_node = A_node->GetNodeRight();
-    Node<T>* B_node_right = B_node->GetNodeRight();
-    Node<T>* B_node_left = B_node->GetNodeLeft();
+AVLResults Avl_tree<T>::RotateLR(Node<T>* C_node) {
+    Node<T> *A_node = C_node->GetNodeLeft();
+    Node<T> *B_node = A_node->GetNodeRight();
+    Node<T> *B_node_right = B_node->GetNodeRight();
+    Node<T> *B_node_left = B_node->GetNodeLeft();
     B_node->SetFatherNode(C_node->GetFatherNode());
-    if(B_node->GetFatherNode() == nullptr){
+    if (B_node->GetFatherNode() == nullptr) {
         this->SetRoot(B_node);
-    }
-    else{
-        if(B_node->GetFatherNode()->GetNodeLeft()== C_node){
+    } else {
+        if (B_node->GetFatherNode()->GetNodeLeft() == C_node) {
             B_node->GetFatherNode()->SetNodeLeft(B_node);
-        }
-        else B_node->GetFatherNode()->SetNodeRight(B_node);
+        } else B_node->GetFatherNode()->SetNodeRight(B_node);
     }
     B_node->SetNodeLeft(A_node);
     B_node->SetNodeRight(C_node);
     A_node->SetFatherNode(B_node);
     C_node->SetFatherNode(B_node);
     C_node->SetNodeLeft(B_node_right);
-    if(B_node_right != nullptr){
+    if (B_node_right != nullptr) {
         B_node_right->SetFatherNode(C_node);
     }
     A_node->SetNodeRight(B_node_left);
-    if(B_node_left != nullptr){
+    if (B_node_left != nullptr) {
         B_node_left->SetFatherNode(A_node);
     }
     A_node->SetNewHeight();
     C_node->SetNewHeight();
     B_node->SetNewHeight();
-    return AVL_SUCCESS;                                                                                                                                                                                                                                                                                                                                                                                                                       }
+    return AVL_SUCCESS;
+}
 
 template <class T>
-AVLResults Avl_tree<T>::RotateRL(Node<T>* C_node){
-    Node<T>* A_node = C_node->GetNodeRight();
-    Node<T>* B_node = A_node->GetNodeLeft();
-    Node<T>* B_node_right = B_node->GetNodeRight();
-    Node<T>* B_node_left = B_node->GetNodeLeft();
+AVLResults Avl_tree<T>::RotateRL(Node<T>* C_node) {
+    Node<T> *A_node = C_node->GetNodeRight();
+    Node<T> *B_node = A_node->GetNodeLeft();
+    Node<T> *B_node_right = B_node->GetNodeRight();
+    Node<T> *B_node_left = B_node->GetNodeLeft();
     B_node->SetFatherNode(C_node->GetFatherNode());
-    if(B_node->GetFatherNode() == nullptr){
+    if (B_node->GetFatherNode() == nullptr) {
         this->SetRoot(B_node);
-    }
-    else{
-        if(B_node->GetFatherNode()->GetNodeLeft()== C_node){
+    } else {
+        if (B_node->GetFatherNode()->GetNodeLeft() == C_node) {
             B_node->GetFatherNode()->SetNodeLeft(B_node);
-        }
-        else B_node->GetFatherNode()->SetNodeRight(B_node);
+        } else B_node->GetFatherNode()->SetNodeRight(B_node);
     }
     B_node->SetNodeRight(A_node);
     B_node->SetNodeLeft(C_node);
     A_node->SetFatherNode(B_node);
     C_node->SetFatherNode(B_node);
     C_node->SetNodeRight(B_node_left);
-    if(B_node_left != nullptr){
+    if (B_node_left != nullptr) {
         B_node_left->SetFatherNode(C_node);
     }
     A_node->SetNodeLeft(B_node_right);
-    if(B_node_right != nullptr){
+    if (B_node_right != nullptr) {
         B_node_right->SetFatherNode(A_node);
     }
     A_node->SetNewHeight();
     C_node->SetNewHeight();
     B_node->SetNewHeight();
-    return AVL_SUCCESS;                                                                                                                                                                                                                                                                                                                                                                                                                       }
+    return AVL_SUCCESS;
+}
+
 
 template <class T>
 void Avl_tree<T>::Check_And_Fix_BF(Node<T>* check){
@@ -1056,7 +991,7 @@ template<class T>
 void Avl_tree<T>::ReverseInorder(int* array, int size){
     int i=0;
     Node<T>* node = this->GetBiggestNode();
-    //TODO: check the condition to stop
+    
     while(node != nullptr && size!=i){
         array[i] = node -> GetKey();
         i+=1;
