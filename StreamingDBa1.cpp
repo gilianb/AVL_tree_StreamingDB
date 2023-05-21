@@ -9,11 +9,11 @@ struct movie_t{
     double grade=0;
     bool vipOnly=false;
     Genre genre=Genre::NONE;
+    int grade_check_num=0;
 
 };
 
 struct user_t{
-    int num_of_film_viewed=0;
     int userID=0;
     Group group= nullptr;
     bool vip= false;
@@ -28,7 +28,6 @@ struct group_t{
     int groupID=0;
     int vip= 0;
     int numberOfUser=0;
-    int num_of_film_viewed=0;
     Avl_tree<user> *usergroup_tree= nullptr;
     int Nfantasy=0;
     int Ncomedy=0;
@@ -925,7 +924,13 @@ StatusType streaming_database::rate_movie(int userId, int movieId, int rating)
 
     }
 
-    movie1->grade= (movie1->grade + rating)/2;// update the grade
+    if(movie1->grade_check_num!=0){
+        movie1->grade = (movie1->grade*movie1->grade_check_num + rating)/(movie1->grade_check_num+1);// update the grade
+        movie1->grade_check_num++;
+    }else{
+        movie1->grade= rating;
+        movie1->grade_check_num++;// update the grade and say that there is at least one grade
+    }
 
     Node<movie> *new_movie = nullptr;
     grade1= movie1->grade;
