@@ -20,10 +20,10 @@
 
 typedef struct movie_t *movie;
 typedef struct user_t *user;
-typedef struct group_t *group;
+typedef struct group_t *Group;
 
 
-void passingOnTheTree(Node<user>* node);
+void Auxdestructorgrouptree(Node<Group>* node);
 
 
 
@@ -31,7 +31,7 @@ class streaming_database {
 private:
     Avl_tree<movie> *movie_tree;
     Avl_tree<user> *user_tree;
-    Avl_tree<group> *group_tree;
+    Avl_tree<Group> *group_tree;
     Avl_tree<movie> *comedy_tree;
     Avl_tree<movie> *drama_tree;
     Avl_tree<movie> *action_tree;

@@ -15,7 +15,7 @@ struct movie_t{
 struct user_t{
     int num_of_film_viewed=0;
     int userID=0;
-    group group= nullptr;
+    Group group= nullptr;
     bool vip= false;
     int nfantasy=0;
     int ncomedy=0;
@@ -26,7 +26,7 @@ struct user_t{
 
 struct group_t{
     int groupID=0;
-    bool vip= false;
+    int vip= 0;
     int numberOfUser=0;
     int num_of_film_viewed=0;
     Avl_tree<user> *usergroup_tree= nullptr;
@@ -39,6 +39,14 @@ struct group_t{
     int WTdrama=0;
     int WTcomedy=0;
 };
+
+void Auxdestructorgrouptree(Node<Group>* node){
+    if(node == nullptr) return;
+    Auxdestructorgrouptree(node->GetNodeLeft());
+    Auxdestructorgrouptree(node->GetNodeRight());
+    node->GetElement()->usergroup_tree->AuxDistructorGenreTree( node->GetElement()->usergroup_tree->GetRoot());
+    delete node;
+}
 
 
 streaming_database::streaming_database()
@@ -61,7 +69,7 @@ streaming_database::streaming_database()
         throw ;
     }
     try {
-        group_tree = new Avl_tree<group>;
+        group_tree = new Avl_tree<Group>;
         group_tree->SetRoot(nullptr);
         group_tree->SetBiggestNode(nullptr);
     }
@@ -131,13 +139,16 @@ streaming_database::~streaming_database()
 {
     //aux destructor pour tout le monde
     //TODO: detruire aussi les elemnts et les tat arbres
+     action_tree->AuxDistructorGenreTree(action_tree->GetRoot());
+     fantasy_tree->AuxDistructorGenreTree(fantasy_tree->GetRoot());
+     drama_tree->AuxDistructorGenreTree(drama_tree->GetRoot());
+     comedy_tree->AuxDistructorGenreTree(comedy_tree->GetRoot());
+     Auxdestructorgrouptree(group_tree->GetRoot());
+   // delete group_tree;
     delete user_tree;
     delete movie_tree;
-    delete group_tree;
-    delete action_tree;
-    delete fantasy_tree;
-    delete drama_tree;
-    delete comedy_tree;
+
+
 }
 
 
@@ -330,7 +341,7 @@ StatusType streaming_database::remove_user(int userId)
     Node<user>* user_to_remove= user_tree->FindNode(userId);
 
     if(user_to_remove->GetElement()->group!= nullptr) {
-        group group1 = user_to_remove->GetElement()->group;
+        Group group1 = user_to_remove->GetElement()->group;
         user user1= user_to_remove->GetElement();
 
         user1->naction += group1->WTaction;
@@ -342,10 +353,14 @@ StatusType streaming_database::remove_user(int userId)
         group1->Ncomedy -= user1->ncomedy;
         group1->Nfantasy -= user1->nfantasy;
         group1->Ndrama -= user1->ndrama;
+        if(user1->vip){
+            group1->vip--;
+        }
 
         Node<user> *Node_to_remove=group1->usergroup_tree->FindNode(userId);
         group1->usergroup_tree->RemoveNode(Node_to_remove);
         group1->numberOfUser--;
+
 
     }
     user_tree->RemoveNode(user_to_remove);
@@ -363,7 +378,7 @@ StatusType streaming_database::add_group(int groupId)
         return StatusType::FAILURE;
     }//this group already exist
 
-    group new_group= nullptr;
+    Group new_group= nullptr;
     try {
         new_group= new group_t;
     }
@@ -378,9 +393,9 @@ StatusType streaming_database::add_group(int groupId)
     new_group->usergroup_tree->SetBiggestNode(nullptr);
 
 
-    Node<group> *group_to_add = nullptr;
+    Node<Group> *group_to_add = nullptr;
     try {
-        group_to_add= new Node<group>;
+        group_to_add= new Node<Group>;
     }
     catch (std::bad_alloc &) {
         delete new_group;
@@ -399,7 +414,7 @@ StatusType streaming_database::add_group(int groupId)
 	return StatusType::SUCCESS;
 }
 
-void passingOnTheTree(Node<user> *biggest_node, group group1) {
+void passingOnTheTree(Node<user> *biggest_node, Group group1) {
     Node<user> *node_to_move=biggest_node;
     while (node_to_move != nullptr) {
         node_to_move->GetElement()->group= nullptr;
@@ -425,13 +440,13 @@ StatusType streaming_database::remove_group(int groupId)
         return StatusType::FAILURE;
     }//this group doesn't exist
 
-    Node<group> *group_to_remove = group_tree->FindNode(groupId);
-    group group1=group_to_remove->GetElement();
+    Node<Group> *group_to_remove = group_tree->FindNode(groupId);
+    Group group1=group_to_remove->GetElement();
 
     //fix group pointer and ngenre in user
     passingOnTheTree(group1->usergroup_tree->GetBiggestNode(),group1);
 
-    group1->usergroup_tree->AuxDistructorTree( group1->usergroup_tree->GetRoot());
+    group1->usergroup_tree->AuxDistructorGenreTree( group1->usergroup_tree->GetRoot());
     group_tree->RemoveNode(group_to_remove);
 
 
@@ -477,12 +492,12 @@ StatusType streaming_database::add_user_to_group(int userId, int groupId)
         return StatusType::FAILURE;
     }//the user is already in a group
 
-    Node<group> *group_to_add_in = group_tree->FindNode(groupId);
-    group group1=group_to_add_in->GetElement();
+    Node<Group> *group_to_add_in = group_tree->FindNode(groupId);
+    Group group1=group_to_add_in->GetElement();
 
     group1->usergroup_tree->InsertNode(user_to_add_in_group);
-    if (user1->vip && !group1->vip){
-        group1->vip=true;
+    if (user1->vip){
+        group1->vip++;
     }
 
     //update group and user fields
@@ -528,7 +543,7 @@ StatusType streaming_database::user_watch(int userId, int movieId)
     }
 
     Genre genre_of_the_film=movie1->genre;
-    group group1=user1->group;
+    Group group1=user1->group;
 
     if (genre_of_the_film==Genre::DRAMA){
         user1->ndrama++;
@@ -639,8 +654,8 @@ StatusType streaming_database::group_watch(int groupId,int movieId)
     Node<movie> *movie_to_watch = movie_tree->FindNode(movieId);
     movie movie1=movie_to_watch->GetElement();
 
-    Node<group> *group_watch = group_tree->FindNode(groupId);
-    group group1=group_watch->GetElement();
+    Node<Group> *group_watch = group_tree->FindNode(groupId);
+    Group group1=group_watch->GetElement();
 
     if (group1->numberOfUser==0){
         return StatusType::FAILURE;
@@ -715,6 +730,7 @@ StatusType streaming_database::group_watch(int groupId,int movieId)
     movie_to_watch->SetElement(nullptr);//TODO: check if the element is not delete
 
     if (genre1==Genre::DRAMA){
+
         drama_tree->RemoveNode(movie_to_watch);
         drama_tree->InsertNodeInGenre(new_movie);
     }
@@ -775,7 +791,7 @@ StatusType streaming_database::get_all_movies(Genre genre, int *const output)
     int size=count_ans.ans();
     //int* to_fill[size];
 
-    int* get_in_order;
+    //int* get_in_order;
     if (genre != Genre::NONE) {
         if ((genre == Genre::DRAMA && num_of_drama == 0) ||(genre == Genre::ACTION && num_of_action == 0)
         || (genre == Genre::COMEDY && num_of_comedy == 0) ||(genre == Genre::FANTASY && num_of_fantasy == 0)){
@@ -821,7 +837,7 @@ output_t<int> streaming_database::get_num_views(int userId, Genre genre) {
     Node<user> *user_to_add = user_tree->FindNode(userId);
     user user1 = user_to_add->GetElement();
 
-    group group1 = user1->group;
+    Group group1 = user1->group;
     int num_of_view = 0;
 
     if (group1 != nullptr) {
@@ -960,8 +976,8 @@ output_t<int> streaming_database::get_group_recommendation(int groupId)
         return StatusType::FAILURE;
     }//this group dosent exist
 
-    Node<group> *group_watch = group_tree->FindNode(groupId);
-    group group1=group_watch->GetElement();
+    Node<Group> *group_watch = group_tree->FindNode(groupId);
+    Group group1=group_watch->GetElement();
 
     if (group1->numberOfUser==0){
         return StatusType::FAILURE;

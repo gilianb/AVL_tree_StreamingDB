@@ -67,6 +67,9 @@ public:
 
     void AuxDistructorTree(Node<T>* node);
 
+    void AuxDistructorGenreTree(Node<T>* node);
+
+
     Node<T>* GetRoot() ;
 
     Node<T>* GetBiggestNode() const;
@@ -272,14 +275,24 @@ Avl_tree<T>::~Avl_tree(){
     this->AuxDistructorTree(root);
 }
 
+
 template <class T>
 void Avl_tree<T>::AuxDistructorTree( Node<T>* node){
+    if(node == nullptr) return;
+    AuxDistructorTree(node->GetNodeLeft());
+    AuxDistructorTree(node->GetNodeRight());
+    delete node;
+}
+
+template <class T>
+void Avl_tree<T>::AuxDistructorGenreTree( Node<T>* node){
     if(node == nullptr) return;
     AuxDistructorTree(node->GetNodeLeft());
     AuxDistructorTree(node->GetNodeRight());
     node->SetElement(nullptr);
     delete node;
 }
+
 
 
 template <class T>
