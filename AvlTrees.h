@@ -215,6 +215,7 @@ Node<T>* Node<T>::GetNodeRight()
 template <class T>
 void Node<T>::SetFatherNode(Node* father_to_set)
 {
+
     father = father_to_set;
 }
 
@@ -290,7 +291,6 @@ void Avl_tree<T>::AuxDistructorGenreTree( Node<T>* node){
     AuxDistructorGenreTree(node->GetNodeLeft());
     AuxDistructorGenreTree(node->GetNodeRight());
     node->SetElement(nullptr);
-    delete node;
 }
 
 

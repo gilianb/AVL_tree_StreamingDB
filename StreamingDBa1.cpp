@@ -45,7 +45,7 @@ void Auxdestructorgrouptree(Node<Group>* node){
     Auxdestructorgrouptree(node->GetNodeLeft());
     Auxdestructorgrouptree(node->GetNodeRight());
     node->GetElement()->usergroup_tree->AuxDistructorGenreTree( node->GetElement()->usergroup_tree->GetRoot());
-    delete node;
+    delete node->GetElement()->usergroup_tree;
 }
 
 
@@ -144,13 +144,13 @@ streaming_database::~streaming_database()
      drama_tree->AuxDistructorGenreTree(drama_tree->GetRoot());
      comedy_tree->AuxDistructorGenreTree(comedy_tree->GetRoot());
      Auxdestructorgrouptree(group_tree->GetRoot());
-   // delete group_tree;
+    delete action_tree;
+    delete fantasy_tree;
+    delete drama_tree;
+    delete comedy_tree;
+    delete group_tree;
     delete user_tree;
     delete movie_tree;
-    //delete action_tree;
-    //delete fantasy_tree;
-    //delete drama_tree;
-    //delete comedy_tree;
 
 
 }
@@ -455,9 +455,11 @@ StatusType streaming_database::remove_group(int groupId)
     Group group1=group_to_remove->GetElement();
 
     //fix group pointer and ngenre in user
-    passingOnTheTree(group1->usergroup_tree->GetBiggestNode(),group1);
-
-    group1->usergroup_tree->AuxDistructorGenreTree( group1->usergroup_tree->GetRoot());
+    if(group1->numberOfUser!=0) {
+        passingOnTheTree(group1->usergroup_tree->GetBiggestNode(), group1);
+        group1->usergroup_tree->AuxDistructorGenreTree(group1->usergroup_tree->GetRoot());
+    }
+    delete group1->usergroup_tree;
     group_tree->RemoveNode(group_to_remove);
 
 
@@ -500,6 +502,8 @@ StatusType streaming_database::add_user_to_group(int userId, int groupId)
 
 
     if(user1->group!= nullptr){
+        user_to_add_in_group->SetElement(nullptr);
+        delete user_to_add_in_group;
         return StatusType::FAILURE;
     }//the user is already in a group
 

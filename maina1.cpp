@@ -32,7 +32,7 @@ int main()
 
     // Execute all commands in file
     string op;
-    while (cin >> op)
+    while (cin >> op && !cin.eof())
     {
         if (!op.compare("add_movie")) {
             cin >> d1 >> g1 >> d2 >> b1;
