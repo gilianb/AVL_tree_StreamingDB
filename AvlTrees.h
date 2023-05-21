@@ -287,8 +287,8 @@ void Avl_tree<T>::AuxDistructorTree( Node<T>* node){
 template <class T>
 void Avl_tree<T>::AuxDistructorGenreTree( Node<T>* node){
     if(node == nullptr) return;
-    AuxDistructorTree(node->GetNodeLeft());
-    AuxDistructorTree(node->GetNodeRight());
+    AuxDistructorGenreTree(node->GetNodeLeft());
+    AuxDistructorGenreTree(node->GetNodeRight());
     node->SetElement(nullptr);
     delete node;
 }
@@ -317,6 +317,7 @@ void Avl_tree<T>::SetBiggestNode(Node<T>* new_biggest) {
     this->biggest_node = new_biggest;
 }
 
+/*
 template <class T>
 Node<T>* Avl_tree<T>::FindPreviousNode(Node<T>* node) const{//TODO: why this dosnt get nullptr fonction to check
     if(node->GetNodeLeft()!=nullptr && node->GetNodeLeft()->GetNodeRight()==nullptr){
@@ -342,6 +343,71 @@ Node<T>* Avl_tree<T>::FindPreviousNode(Node<T>* node) const{//TODO: why this dos
     }
     return nullptr;
 }
+ */
+
+template<class T>
+Node<T>* Avl_tree<T>::FindPreviousNode(Node<T>* node) const{//TODO: why this dosnt get nullptr fonction to check
+    Node<T> *following;
+    if (node->GetFatherNode() == nullptr) {
+        if (node->GetNodeLeft() == nullptr) //there's no smallest after him and there's no father
+        {
+            return nullptr;
+        }
+
+        following = node->GetNodeLeft(); //smallest
+
+        while (true) {
+            if (following->GetNodeRight() == nullptr) //smallest after him
+                break;
+            following = following->GetNodeRight();
+        }
+        return following;
+    }
+
+    else  //there's a father
+    {
+        if (node->GetNodeLeft() != nullptr) //there's a left son
+        {
+            following = node->GetNodeLeft();
+
+            while (true) {
+                if (following->GetNodeRight() == nullptr) //smallest after him
+                    break;
+                following = following->GetNodeRight();
+            }
+            return following;
+        }
+
+        //There's no left son but there's a father
+        Node<T>* father = node->GetFatherNode();
+        if (node->GetNodeLeft() == nullptr) {
+            if (father->GetNodeRight() == node) //node is a right son
+            {
+                return father;
+            }
+            else if (father->GetNodeLeft() == node) //left son
+            {
+                Node<T> *grandfather = father->GetFatherNode();
+
+                while (true) {
+                    if (grandfather == nullptr)
+                        return nullptr;
+
+                    if (grandfather->GetNodeRight() == father) {
+                        return grandfather;
+                    }
+
+                    if (grandfather->GetNodeRight() != father) {
+                        grandfather = grandfather->GetFatherNode();
+                        father = father->GetFatherNode();
+                    }
+                }
+            }
+        }
+    }
+    return nullptr;
+}
+
 
 template <class T>
 Node<T>* Avl_tree<T>::FindNode(int key_to_find) const{
@@ -944,6 +1010,8 @@ AVLResults Avl_tree<T>::RemoveNode(Node<T>* node_to_remove) {
                 this->SetBiggestNode(node_to_remove->GetFatherNode());
             }
         }
+        delete node_to_remove;
+        return AVL_SUCCESS;
     }
     else if (node_to_remove->GetNodeRight()== nullptr || node_to_remove->GetNodeLeft()== nullptr){
         Node<T>* son_of_node_to_remove;

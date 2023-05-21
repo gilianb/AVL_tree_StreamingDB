@@ -40,6 +40,7 @@ struct group_t{
     int WTcomedy=0;
 };
 
+
 void Auxdestructorgrouptree(Node<Group>* node){
     if(node == nullptr) return;
     Auxdestructorgrouptree(node->GetNodeLeft());
@@ -147,6 +148,10 @@ streaming_database::~streaming_database()
    // delete group_tree;
     delete user_tree;
     delete movie_tree;
+    //delete action_tree;
+    //delete fantasy_tree;
+    //delete drama_tree;
+    //delete comedy_tree;
 
 
 }
@@ -256,6 +261,7 @@ StatusType streaming_database::remove_movie(int movieId)
     double grade = temp_node->GetElement()->grade;
     Genre genre=temp_node->GetElement()->genre;
 
+    temp_node->SetElement(nullptr);
     movie_tree->RemoveNode(temp_node);//remove from movie tree
 
 
@@ -358,6 +364,7 @@ StatusType streaming_database::remove_user(int userId)
         }
 
         Node<user> *Node_to_remove=group1->usergroup_tree->FindNode(userId);
+        Node_to_remove->SetElement(nullptr);
         group1->usergroup_tree->RemoveNode(Node_to_remove);
         group1->numberOfUser--;
 
@@ -387,8 +394,13 @@ StatusType streaming_database::add_group(int groupId)
     }
 
     new_group-> groupID=groupId;
-    //TODO: try et catch
-    new_group-> usergroup_tree=new Avl_tree<user>;
+    try {
+        new_group-> usergroup_tree=new Avl_tree<user>;
+    }
+    catch (std::bad_alloc &) {
+        delete new_group;
+        return StatusType::ALLOCATION_ERROR;
+    }
     new_group->usergroup_tree->SetRoot(nullptr);
     new_group->usergroup_tree->SetBiggestNode(nullptr);
 
@@ -609,7 +621,7 @@ StatusType streaming_database::user_watch(int userId, int movieId)
     new_movie->SetNodeLeft(nullptr);
     new_movie->SetNodeRight(nullptr);
 
-    movie_to_watch->SetElement(nullptr);//TODO: check if the element is not delete
+    movie_to_watch->SetElement(nullptr);
 
 
     if (genre1==Genre::DRAMA){
@@ -727,7 +739,7 @@ StatusType streaming_database::group_watch(int groupId,int movieId)
     new_movie->SetNodeRight(nullptr);
 
 
-    movie_to_watch->SetElement(nullptr);//TODO: check if the element is not delete
+    movie_to_watch->SetElement(nullptr);
 
     if (genre1==Genre::DRAMA){
 
@@ -789,9 +801,7 @@ StatusType streaming_database::get_all_movies(Genre genre, int *const output)
     }
     output_t<int> count_ans= get_all_movies_count(genre);
     int size=count_ans.ans();
-    //int* to_fill[size];
 
-    //int* get_in_order;
     if (genre != Genre::NONE) {
         if ((genre == Genre::DRAMA && num_of_drama == 0) ||(genre == Genre::ACTION && num_of_action == 0)
         || (genre == Genre::COMEDY && num_of_comedy == 0) ||(genre == Genre::FANTASY && num_of_fantasy == 0)){
@@ -815,11 +825,8 @@ StatusType streaming_database::get_all_movies(Genre genre, int *const output)
         }
     }else{
         ReverseInOrderOfNone(output, size,drama_tree,comedy_tree,action_tree,fantasy_tree);
-        //TODO:faire in order avec les 4 arbres enembles das le cas ou genre ==none
     }
 
-    //output[0] = 4001;
-    //output[1] = 4002;
     return StatusType::SUCCESS;
 }
 
@@ -939,7 +946,7 @@ StatusType streaming_database::rate_movie(int userId, int movieId, int rating)
     new_movie->SetNodeLeft(nullptr);
     new_movie->SetNodeRight(nullptr);
 
-    movie_to_watch->SetElement(nullptr);//TODO: check if the element is not delete
+    movie_to_watch->SetElement(nullptr);
 
     if (genre1==Genre::DRAMA){
         drama_tree->RemoveNode(movie_to_watch);
@@ -1017,9 +1024,6 @@ output_t<int> streaming_database::get_group_recommendation(int groupId)
 
     return movie_to_see->movieID;
 
-
-    //static int i = 0;
-    //return (i++==0) ? 11 : 2;
 }
 
 
